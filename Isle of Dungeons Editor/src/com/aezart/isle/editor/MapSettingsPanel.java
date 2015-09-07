@@ -11,28 +11,28 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 public class MapSettingsPanel extends JPanel{
-	JLabel nameLabel = new JLabel("Map name:");
-	JTextField nameField = new JTextField();
+	private JLabel nameLabel = new JLabel("Map name:");
+	public JTextField nameField = new JTextField();
 	
-	JLabel tileSizeLabel = new JLabel("Tile width (pixels):");
-	JSpinner tileSizeSpinner = new JSpinner(new SpinnerNumberModel(16, 1, Integer.MAX_VALUE, 1));
+	private JLabel tileSizeLabel = new JLabel("Tile width (pixels):");
+	public JSpinner tileSizeSpinner = new JSpinner(new SpinnerNumberModel(16, 1, Integer.MAX_VALUE, 1));
 	
-	JLabel screen_xtilesLabel = new JLabel("Screen width (tiles):");
-	JSpinner screen_xtilesSpinner = new JSpinner(new SpinnerNumberModel(20, 1, Integer.MAX_VALUE, 1));
+	private JLabel screen_xtilesLabel = new JLabel("Screen width (tiles):");
+	public JSpinner screen_xtilesSpinner = new JSpinner(new SpinnerNumberModel(20, 1, Integer.MAX_VALUE, 1));
 	
-	JLabel screen_ytilesLabel = new JLabel("Screen height (tiles):");
-	JSpinner screen_ytilesSpinner = new JSpinner(new SpinnerNumberModel(15, 1, Integer.MAX_VALUE, 1));
+	private JLabel screen_ytilesLabel = new JLabel("Screen height (tiles):");
+	public JSpinner screen_ytilesSpinner = new JSpinner(new SpinnerNumberModel(15, 1, Integer.MAX_VALUE, 1));
 	
-	JLabel xscreensLabel = new JLabel ("Map width (screens):");
-	JSpinner xscreensSpinner = new JSpinner(new SpinnerNumberModel(5, 1, Integer.MAX_VALUE, 1));
+	private JLabel xscreensLabel = new JLabel ("Map width (screens):");
+	public JSpinner xscreensSpinner = new JSpinner(new SpinnerNumberModel(5, 1, Integer.MAX_VALUE, 1));
 	
-	JLabel yscreensLabel = new JLabel ("Map height (screens):");
-	JSpinner yscreensSpinner = new JSpinner(new SpinnerNumberModel(5, 1, Integer.MAX_VALUE, 1));
+	private JLabel yscreensLabel = new JLabel ("Map height (screens):");
+	public JSpinner yscreensSpinner = new JSpinner(new SpinnerNumberModel(5, 1, Integer.MAX_VALUE, 1));
 	
-	JLabel tilesetLabel = new JLabel("Tileset:");
-	JPanel browsePanel = new JPanel(new BorderLayout());
-	JButton browseButton = new JButton("Open");
-	JTextField browseField = new JTextField();
+	private JLabel tilesetLabel = new JLabel("Tileset:");
+	private JPanel tilesetPanel = new JPanel(new BorderLayout());
+	private JButton tilesetButton = new JButton("Open");
+	public JTextField tilesetField = new JTextField();
 	public MapSettingsPanel(){
 		this.setLayout(new GridLayout(0, 2));
 		this.add(nameLabel);
@@ -48,8 +48,8 @@ public class MapSettingsPanel extends JPanel{
 		this.add(yscreensLabel);
 		this.add(yscreensSpinner);
 		this.add(tilesetLabel);
-		browsePanel.add(browseButton, BorderLayout.WEST);
-		browsePanel.add(browseField, BorderLayout.CENTER);
-		this.add(browsePanel);
+		tilesetPanel.add(tilesetButton, BorderLayout.WEST);
+		tilesetPanel.add(tilesetField, BorderLayout.CENTER);
+		this.add(tilesetPanel);
 	}
 }
