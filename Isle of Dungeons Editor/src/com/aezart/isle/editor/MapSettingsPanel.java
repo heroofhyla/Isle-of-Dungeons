@@ -1,9 +1,7 @@
 package com.aezart.isle.editor;
 
-import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -30,8 +28,6 @@ public class MapSettingsPanel extends JPanel{
 	public JSpinner yscreensSpinner = new JSpinner(new SpinnerNumberModel(5, 1, Integer.MAX_VALUE, 1));
 	
 	private JLabel tilesetLabel = new JLabel("Tileset:");
-	private JPanel tilesetPanel = new JPanel(new BorderLayout());
-	private JButton tilesetButton = new JButton("Open");
 	public JTextField tilesetField = new JTextField();
 	public MapSettingsPanel(){
 		this.setLayout(new GridLayout(0, 2));
@@ -48,8 +44,6 @@ public class MapSettingsPanel extends JPanel{
 		this.add(yscreensLabel);
 		this.add(yscreensSpinner);
 		this.add(tilesetLabel);
-		tilesetPanel.add(tilesetButton, BorderLayout.WEST);
-		tilesetPanel.add(tilesetField, BorderLayout.CENTER);
-		this.add(tilesetPanel);
+		this.add(tilesetField);
 	}
 }
