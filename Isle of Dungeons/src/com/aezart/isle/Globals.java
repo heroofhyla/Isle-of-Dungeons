@@ -29,7 +29,7 @@ public class Globals {
 		long nanotimestep = 50 * 1_000_000;
 		
 		Properties props = new Properties();
-		String fname = "/res/isle.properties";
+		String fname = "settings/isle.properties";
 		InputStream pstream = Globals.class.getClassLoader().getResourceAsStream(fname);
 		try {
 			props.load(pstream);

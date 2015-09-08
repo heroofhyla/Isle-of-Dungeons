@@ -14,4 +14,16 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/res</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/res</locationURI>
+		</link>
+		<link>
+			<name>src/settings</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/settings</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
