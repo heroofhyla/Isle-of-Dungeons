@@ -1,7 +1,11 @@
 package com.aezart.isle.editor;
 
+import javax.swing.SwingUtilities;
+
 public class Editor {
 	public static void main(String[] args){
-		MainWindow mw = new MainWindow();
+		SwingUtilities.invokeLater(() -> {
+			MainWindow mw = new MainWindow();
+		});
 	}
 }

@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -60,7 +61,14 @@ public class MainWindow {
 		mapPreview = new JPanel(){
 			@Override
 			protected void paintComponent(Graphics g) {
-				g.drawImage(mapPreviewImage, 0, 0, null);
+				long startTime = System.nanoTime();
+				int x1 = -mapPreview.getX();
+				int x2 = x1 + scrollPane.getVisibleRect().width;
+				int y1 = -mapPreview.getY();
+				int y2 = y1 + scrollPane.getVisibleRect().height;
+				System.out.println(x1 + " " + y1 + " " + x2 + " " + y2);
+				g.drawImage(mapPreviewImage, x1, y1, x2, y2, x1, y1, x2, y2, null);
+				System.out.println("Redraw took " + (System.nanoTime() - startTime)/1_000_000 + " ms");
 			}
 		};
 		mapPreview.addMouseListener(mapListener);
@@ -132,8 +140,10 @@ public class MainWindow {
 	}
 	
 	public void updateMapDimensions(){
+		System.out.println("updatecalled");
 		mapPreviewImage = frame.getGraphicsConfiguration().createCompatibleImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, 
-				properties.yscreens * properties.screen_ytiles * properties.tile_side);
+				properties.yscreens * properties.screen_ytiles * properties.tile_side, Transparency.OPAQUE);
+		//mapPreviewImage = new BufferedImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, properties.yscreens * properties.screen_ytiles * properties.tile_side, BufferedImage.TYPE_3BYTE_BGR);
 		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth(), mapPreviewImage.getHeight()));
 		mapPreview.revalidate();
 		scrollPane.repaint();
