@@ -11,11 +11,9 @@ public class Tileset {
 	ArrayList<BufferedImage> tiles = new ArrayList<>();
 	
 	public BufferedImage processImage(String filePath, int tileSize){
-		System.out.println("processImage called");
 		BufferedImage image;
 		try {
 			image = ImageIO.read(this.getClass().getClassLoader().getResource(filePath));
-			System.out.println("read image");
 			tiles.clear();
 			int xTiles = (int)Math.ceil(image.getWidth()/(double)tileSize);
 			int yTiles = (int)Math.ceil(image.getHeight()/(double)tileSize);

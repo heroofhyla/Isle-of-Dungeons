@@ -19,37 +19,33 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
 		if (lastMouseX != Integer.MIN_VALUE){
-			int mtx = tileFromMouse(e.getX(), properties.tile_side);
-			int mty = tileFromMouse(e.getY(), properties.tile_side);
-			int lmtx = tileFromMouse(lastMouseX, properties.tile_side);
-			int lmty = tileFromMouse(lastMouseY, properties.tile_side);
+			int mtx = tileFromMouse(e.getX(), properties.tile_side * zoom);
+			int mty = tileFromMouse(e.getY(), properties.tile_side * zoom);
+			int lmtx = tileFromMouse(lastMouseX, properties.tile_side * zoom);
+			int lmty = tileFromMouse(lastMouseY, properties.tile_side * zoom);
 			int xdist = mtx - lmtx;
 			int ydist = mty - lmty;
 			
 			if (Math.max(Math.abs(xdist), Math.abs(ydist)) <= 1){
-				paintTile(tileFromMouse(e.getX(), properties.tile_side), tileFromMouse(e.getY(), properties.tile_side), gui.paletteXTile, gui.paletteYTile);
+				paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
 			}else{
 				double magnitude = Math.sqrt(xdist * xdist + ydist*ydist);
-				System.out.println("distance: " + xdist + " " + ydist);
-				System.out.println("magnitude: " + magnitude);
 				double uxdist = xdist/magnitude;
 				double uydist = ydist/magnitude;
-				System.out.println("unit distance: " + uxdist + " " + uydist);
 				double x = lmtx;
 				double y = lmty;
-				System.out.println("Entering loop");
 				while (Math.abs(x - mtx) > 1 || Math.abs(y - mty) > 1){
-					System.out.println(x + " " + y);
 					x += uxdist;
 					y += uydist;
-					paintTile((int)x, (int)y, gui.paletteXTile, gui.paletteYTile);
+					paintTile((int)x, (int)y, gui.paletteXTile * zoom, gui.paletteYTile * zoom);
 				}
 			}
 		}
 		lastMouseX = e.getX();
 		lastMouseY = e.getY();
-		paintTile(tileFromMouse(e.getX(), properties.tile_side), tileFromMouse(e.getY(), properties.tile_side), gui.paletteXTile, gui.paletteYTile);
+		paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
 		gui.frame.repaint();
 	}
 	
@@ -88,7 +84,9 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 
 	@Override
 	public void mousePressed(MouseEvent e) {
-		paintTile(tileFromMouse(e.getX(), properties.tile_side), tileFromMouse(e.getY(), properties.tile_side), gui.paletteXTile, gui.paletteYTile);
+		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
+
+		paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
 		gui.frame.repaint();
 
 		}

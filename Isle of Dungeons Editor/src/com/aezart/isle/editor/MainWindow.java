@@ -3,16 +3,21 @@ package com.aezart.isle.editor;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -32,27 +37,37 @@ public class MainWindow {
 	Tileset tileset = new Tileset();
 	JScrollPane scrollPane;
 	BufferedImage tilesetImage;
+	JComboBox<Integer> zoomLevel; 
 	int selectedTile = 0;
 	int paletteXTile = 0;
 	int paletteYTile = 0;
 	public MainWindow(){
 		properties = new MapProperties();
+		
 		MapMouseListener mapListener = new MapMouseListener(this, properties);
+		
 		frame = new JFrame();
 		paletteWindow = new JDialog(frame);
 		frame.setLayout(new BorderLayout());
-		
+		JLabel zoomLabel = new JLabel("Zoom:");
+		zoomLevel = new JComboBox<Integer>();
+		zoomLevel.addItem(1);
+		zoomLevel.addItem(2);
+		zoomLevel.addItem(4);
+		zoomLevel.setPrototypeDisplayValue(4);
+		zoomLevel.addActionListener((ActionEvent arg0)->{
+			reZoom();
+			frame.repaint();
+		});
 		mapPreview = new JPanel(){
 			@Override
 			protected void paintComponent(Graphics g) {
-				long startTime = System.nanoTime();
+				int zoom = (Integer)zoomLevel.getSelectedItem();
 				int x1 = -mapPreview.getX();
 				int x2 = x1 + scrollPane.getVisibleRect().width;
 				int y1 = -mapPreview.getY();
 				int y2 = y1 + scrollPane.getVisibleRect().height;
-				System.out.println(x1 + " " + y1 + " " + x2 + " " + y2);
-				g.drawImage(mapPreviewImage, x1, y1, x2, y2, x1, y1, x2, y2, null);
-				System.out.println("Redraw took " + (System.nanoTime() - startTime)/1_000_000 + " ms");
+				g.drawImage(mapPreviewImage, x1, y1, x2, y2, x1/zoom, y1/zoom, x2/zoom, y2/zoom, null);
 			}
 		};
 		mapPreview.addMouseListener(mapListener);
@@ -61,9 +76,11 @@ public class MainWindow {
 
 		
 		scrollPane.setPreferredSize(new Dimension(640,480));
-		
+		toolbar.add(zoomLabel);
+		toolbar.add(zoomLevel);
 		toolbar.add(new JButton(new SettingsAction()));
 		toolbar.setFloatable(false);
+		toolbar.setLayout(new FlowLayout());
 		
 		paletteWindow.setLayout(new BorderLayout());
 		palettePanel = new JPanel(){
@@ -113,7 +130,8 @@ public class MainWindow {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 		
-		paletteWindow.setLocation(20,20);
+		paletteWindow.setLocation(0,0);
+		paletteWindow.setPreferredSize(new Dimension(200,400));
 		paletteWindow.pack();
 		paletteWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
@@ -124,10 +142,8 @@ public class MainWindow {
 	}
 	
 	public void updateMapDimensions(){
-		System.out.println("updatecalled");
 		mapPreviewImage = frame.getGraphicsConfiguration().createCompatibleImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, 
 				properties.yscreens * properties.screen_ytiles * properties.tile_side, Transparency.OPAQUE);
-		//mapPreviewImage = new BufferedImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, properties.yscreens * properties.screen_ytiles * properties.tile_side, BufferedImage.TYPE_3BYTE_BGR);
 		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth(), mapPreviewImage.getHeight()));
 		mapPreview.revalidate();
 		scrollPane.repaint();
@@ -143,13 +159,15 @@ public class MainWindow {
 	
 	public void updateSelectedTile(int mousex, int mousey){
 		paletteXTile = mousex/properties.tile_side;
-		System.out.println("xtile " + paletteXTile);
 		paletteYTile = mousey/properties.tile_side;
-		System.out.println("ytile " + paletteYTile);
 		int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
 		selectedTile = paletteYTile * tilesetWidth + paletteXTile;
-		System.out.println("selected tile " + selectedTile);
 		paletteWindow.repaint();
+	}
+	
+	public void reZoom(){
+		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth() * (Integer)zoomLevel.getSelectedItem(), mapPreviewImage.getHeight() * (Integer)zoomLevel.getSelectedItem()));
+		mapPreview.revalidate();
 	}
 	class SettingsAction extends AbstractAction{
 		
@@ -179,4 +197,5 @@ public class MainWindow {
 			}
 		}	
 	}
+	
 }
