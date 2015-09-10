@@ -1,38 +1,22 @@
 package com.aezart.isle.editor;
 
 import java.awt.BorderLayout;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Graphics;
-import java.awt.GraphicsConfiguration;
-import java.awt.Insets;
-import java.awt.Rectangle;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-
 import javax.swing.AbstractAction;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
-import javax.swing.JViewport;
-import javax.swing.JWindow;
-import javax.swing.Scrollable;
 
 public class MainWindow {
 	JFrame frame;
@@ -49,8 +33,8 @@ public class MainWindow {
 	JScrollPane scrollPane;
 	BufferedImage tilesetImage;
 	int selectedTile = 0;
-	int selectedXTile = 0;
-	int selectedYTile = 0;
+	int paletteXTile = 0;
+	int paletteYTile = 0;
 	public MainWindow(){
 		properties = new MapProperties();
 		MapMouseListener mapListener = new MapMouseListener(this, properties);
@@ -87,7 +71,7 @@ public class MainWindow {
 			protected void paintComponent(Graphics g) {
 				g.drawImage(tilesetImage,0,0,null);
 				g.setColor(Color.black);
-				g.drawRect(selectedXTile * properties.tile_side, selectedYTile * properties.tile_side, properties.tile_side, properties.tile_side);
+				g.drawRect(paletteXTile * properties.tile_side, paletteYTile * properties.tile_side, properties.tile_side, properties.tile_side);
 			}
 		};		
 		
@@ -151,16 +135,19 @@ public class MainWindow {
 		palettePanel.setPreferredSize(new Dimension(tilesetImage.getWidth(), tilesetImage.getHeight()));
 		properties.tileIDs = new int[properties.xscreens * properties.screen_xtiles][properties.yscreens * properties.screen_ytiles];
 		paletteWindow.repaint();
+		Graphics g = mapPreviewImage.getGraphics();
+		g.setColor(Color.black);
+		g.fillRect(0, 0, mapPreviewImage.getWidth(), mapPreviewImage.getHeight());
 
 	}
 	
 	public void updateSelectedTile(int mousex, int mousey){
-		selectedXTile = mousex/properties.tile_side;
-		System.out.println("xtile " + selectedXTile);
-		selectedYTile = mousey/properties.tile_side;
-		System.out.println("ytile " + selectedYTile);
+		paletteXTile = mousex/properties.tile_side;
+		System.out.println("xtile " + paletteXTile);
+		paletteYTile = mousey/properties.tile_side;
+		System.out.println("ytile " + paletteYTile);
 		int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
-		selectedTile = selectedYTile * tilesetWidth + selectedXTile;
+		selectedTile = paletteYTile * tilesetWidth + paletteXTile;
 		System.out.println("selected tile " + selectedTile);
 		paletteWindow.repaint();
 	}
