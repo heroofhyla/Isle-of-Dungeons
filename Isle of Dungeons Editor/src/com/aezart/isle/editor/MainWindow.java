@@ -7,10 +7,11 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+
+import javafx.scene.control.ScrollBar;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -20,6 +21,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
@@ -41,6 +43,7 @@ public class MainWindow {
 	int selectedTile = 0;
 	int paletteXTile = 0;
 	int paletteYTile = 0;
+	int zoom = 1;
 	public MainWindow(){
 		properties = new MapProperties();
 		
@@ -166,8 +169,31 @@ public class MainWindow {
 	}
 	
 	public void reZoom(){
+		double scaleFactor = (Integer)zoomLevel.getSelectedItem()/(double)zoom;
+		JScrollBar xScrollBar = scrollPane.getHorizontalScrollBar();
+		JScrollBar yScrollBar = scrollPane.getVerticalScrollBar();
+		
+		int oldCenterX = xScrollBar.getValue() + xScrollBar.getVisibleAmount()/2;
+		int oldCenterY = yScrollBar.getValue() + yScrollBar.getVisibleAmount()/2;
+		int targetCenterX = (int)(oldCenterX * scaleFactor);
+		int targetCenterY = (int)(oldCenterY * scaleFactor);
+		
+		int dCenterX = targetCenterX - oldCenterX;
+		int dCenterY = targetCenterY - oldCenterY;
+		int oldLeftX = xScrollBar.getValue();
+		int oldTopY = yScrollBar.getValue();
 		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth() * (Integer)zoomLevel.getSelectedItem(), mapPreviewImage.getHeight() * (Integer)zoomLevel.getSelectedItem()));
-		mapPreview.revalidate();
+		mapPreview.setSize(mapPreview.getPreferredSize());
+		mapPreview.validate();
+		xScrollBar.setMaximum(mapPreview.getWidth());
+		yScrollBar.setMaximum(mapPreview.getHeight());
+		int targetLeftX = oldLeftX + dCenterX;
+		int targetTopY = oldTopY + dCenterY;
+		xScrollBar.setValue(targetLeftX);
+		yScrollBar.setValue(targetTopY);
+		
+		zoom = (Integer)zoomLevel.getSelectedItem();
+
 	}
 	class SettingsAction extends AbstractAction{
 		
