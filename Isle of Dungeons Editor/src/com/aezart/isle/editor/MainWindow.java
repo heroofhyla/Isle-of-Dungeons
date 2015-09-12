@@ -5,11 +5,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.VolatileImage;
+import java.util.ArrayDeque;
 
 import javafx.scene.control.ScrollBar;
 
@@ -28,7 +32,7 @@ import javax.swing.JToolBar;
 public class MainWindow {
 	JFrame frame;
 	JPanel mapPreview;
-	BufferedImage mapPreviewImage;
+	VolatileImage mapPreviewImage;
 	MapSettingsPanel mapSettingsPanel;
 	JButton mapSettings;
 	MapProperties properties;
@@ -39,11 +43,13 @@ public class MainWindow {
 	Tileset tileset = new Tileset();
 	JScrollPane scrollPane;
 	BufferedImage tilesetImage;
+	
 	JComboBox<Integer> zoomLevel; 
 	int selectedTile = 0;
 	int paletteXTile = 0;
 	int paletteYTile = 0;
 	int zoom = 1;
+	ArrayDeque<int[]> tilesToUpdate = new ArrayDeque<>();
 	public MainWindow(){
 		properties = new MapProperties();
 		
@@ -64,15 +70,49 @@ public class MainWindow {
 		});
 		mapPreview = new JPanel(){
 			@Override
-			protected void paintComponent(Graphics g) {
+			protected void paintComponent(Graphics g) {/*
+				int scaledTileSize = properties.tile_side * zoom;
+				for (int y = 0; y < mapPreview.getHeight()/scaledTileSize; ++y){
+					for (int x = 0; x < mapPreview.getWidth()/scaledTileSize; ++x){
+						System.out.println("drawing at tile:" + x + " " + y);
+						int dx1 = x * scaledTileSize;
+						int dy1 = y * scaledTileSize;
+						int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
+						int sx1 = (properties.tileIDs[y][x] % tilesetWidth) * properties.tile_side;
+						int sy1 = (properties.tileIDs[y][x] / tilesetWidth) * properties.tile_side;
+						
+						g.drawImage(tilesetImage, dx1, dy1, dx1 + scaledTileSize, dy1 + scaledTileSize, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);   
+					}
+				}*/
+				super.paintComponent(g);
+				long startTime = System.nanoTime();
+				Graphics2D g2D = (Graphics2D) g;
+				System.out.println(g.getClipBounds());
+				RenderingHints rh = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+				
+				g2D.setRenderingHints(rh);
+				
+				System.out.println("started painting");
+				//super.paintComponent(g);
 				int zoom = (Integer)zoomLevel.getSelectedItem();
 				int x1 = -mapPreview.getX();
 				int x2 = x1 + scrollPane.getVisibleRect().width;
 				int y1 = -mapPreview.getY();
 				int y2 = y1 + scrollPane.getVisibleRect().height;
-				g.drawImage(mapPreviewImage, x1, y1, x2, y2, x1/zoom, y1/zoom, x2/zoom, y2/zoom, null);
+				g2D.drawImage(mapPreviewImage, x1, y1, x2, y2, x1/zoom, y1/zoom, x2/zoom, y2/zoom, null);
+				//g.drawImage(mapPreviewImage, 0, 0, null);
+				/*while (!tilesToUpdate.isEmpty()){
+					int[] tileInfo = tilesToUpdate.removeLast();
+					int dX = tileInfo[0] * zoom * properties.tile_side;
+					int dY = tileInfo[1] * zoom * properties.tile_side;
+					int sX = tileInfo[2] * properties.tile_side;
+					int sY = tileInfo[3] * properties.tile_side;
+					g.drawImage(mapPreviewImage, dX, dY, dX + zoom * properties.tile_side, dY + zoom * properties.tile_side, sX, sY, sX + properties.tile_side, sY + properties.tile_side, null);
+				}*/
+				System.out.println("finished painting in " + (System.nanoTime() - startTime));
 			}
 		};
+		
 		mapPreview.addMouseListener(mapListener);
 		mapPreview.addMouseMotionListener(mapListener);
 		scrollPane = new JScrollPane(mapPreview);
@@ -145,14 +185,14 @@ public class MainWindow {
 	}
 	
 	public void updateMapDimensions(){
-		mapPreviewImage = frame.getGraphicsConfiguration().createCompatibleImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, 
+		mapPreviewImage = frame.getGraphicsConfiguration().createCompatibleVolatileImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, 
 				properties.yscreens * properties.screen_ytiles * properties.tile_side, Transparency.OPAQUE);
 		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth(), mapPreviewImage.getHeight()));
 		mapPreview.revalidate();
 		scrollPane.repaint();
-		tilesetImage = tileset.processImage(properties.tileset, properties.tile_side);
+		tilesetImage = tileset.processImage(properties.tileset, properties.tile_side, frame);
 		palettePanel.setPreferredSize(new Dimension(tilesetImage.getWidth(), tilesetImage.getHeight()));
-		properties.tileIDs = new int[properties.xscreens * properties.screen_xtiles][properties.yscreens * properties.screen_ytiles];
+		properties.tileIDs = new int[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
 		paletteWindow.repaint();
 		Graphics g = mapPreviewImage.getGraphics();
 		g.setColor(Color.black);

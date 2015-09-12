@@ -1,36 +1,25 @@
 package com.aezart.isle.editor;
 
 import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFrame;
 
 public class Tileset {
 	ArrayList<BufferedImage> tiles = new ArrayList<>();
 	
-	public BufferedImage processImage(String filePath, int tileSize){
+	public BufferedImage processImage(String filePath, int tileSize, JFrame frame){
 		BufferedImage image;
 		try {
 			image = ImageIO.read(this.getClass().getClassLoader().getResource(filePath));
-			tiles.clear();
-			int xTiles = (int)Math.ceil(image.getWidth()/(double)tileSize);
-			int yTiles = (int)Math.ceil(image.getHeight()/(double)tileSize);
-			
-			for (int i = 0; i < xTiles; ++i){
-				for (int k = 0; k < yTiles; ++k){
-					BufferedImage b = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR_PRE);
-					Graphics g = b.getGraphics();
-					int topLeftX = i * tileSize;
-					int topLeftY = k * tileSize;
-					g.drawImage(image, 0, 0, tileSize, tileSize, topLeftX, topLeftY, topLeftX+tileSize, topLeftY+tileSize, null);
-					
-					tiles.add(b);
-				}
-			}
-			
-			return image;
+			BufferedImage b = frame.getGraphicsConfiguration().createCompatibleImage(image.getWidth(), image.getHeight(), Transparency.OPAQUE);
+			b.getGraphics().drawImage(image, 0, 0, null);
+			return b;
 
 		} catch (IOException e) {
 			e.printStackTrace();

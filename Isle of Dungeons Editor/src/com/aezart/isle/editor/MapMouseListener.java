@@ -5,6 +5,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
+import javax.swing.SwingUtilities;
+
 public class MapMouseListener implements MouseListener, MouseMotionListener{
 	
 	MainWindow gui;
@@ -16,9 +18,10 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 		this.gui = gui;
 		this.properties = properties;
 	}
-
 	@Override
 	public void mouseDragged(MouseEvent e) {
+		System.out.println("received dragevent");
+		long startTime = System.nanoTime();
 		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
 		if (lastMouseX != Integer.MIN_VALUE){
 			int mtx = tileFromMouse(e.getX(), properties.tile_side * zoom);
@@ -39,24 +42,34 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 				while (Math.abs(x - mtx) > 1 || Math.abs(y - mty) > 1){
 					x += uxdist;
 					y += uydist;
-					paintTile((int)x, (int)y, gui.paletteXTile * zoom, gui.paletteYTile * zoom);
+					paintTile((int)x, (int)y, gui.paletteXTile, gui.paletteYTile);
+					
 				}
 			}
 		}
+		paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
+		//gui.frame.repaint();
+		
 		lastMouseX = e.getX();
 		lastMouseY = e.getY();
-		paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
-		gui.frame.repaint();
+		System.out.println("dragevent finished in " + (System.nanoTime() - startTime)/1000000);
+
 	}
 	
 	public void paintTile(int dxt, int dyt, int sxt, int syt){
+		properties.tileIDs[dyt][dxt] = gui.selectedTile;
+		
 		int dxpx = dxt * properties.tile_side;
 		int dypx = dyt * properties.tile_side;
 		int sxpx = sxt * properties.tile_side;
 		int sypx = syt * properties.tile_side;
 		
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
+		//Graphics2D g = (Graphics2D)gui.mapPreview.getGraphics();
 		g.drawImage(gui.tilesetImage, dxpx, dypx, dxpx + properties.tile_side, dypx + properties.tile_side, sxpx, sypx, sxpx + properties.tile_side, sypx + properties.tile_side, null);
+		gui.mapPreview.repaint(dxpx, dypx, dxpx + properties.tile_side, dypx + properties.tile_side);
+		int[] vals = {dxt, dyt, sxt, syt};
+		gui.tilesToUpdate.push(vals);
 
 	}
 	@Override
