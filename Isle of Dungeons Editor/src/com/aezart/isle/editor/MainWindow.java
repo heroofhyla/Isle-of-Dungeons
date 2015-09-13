@@ -73,6 +73,8 @@ public class MainWindow {
 			@Override
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
+				Long startTime = System.nanoTime();
+
 				Graphics2D g2D = (Graphics2D) g;
 				int zoom = (Integer)zoomLevel.getSelectedItem();
 				int x1 = -mapPreview.getX();
@@ -87,6 +89,7 @@ public class MainWindow {
 				}
 
 				g2D.drawImage(mapPreviewImage, x1, y1, x2, y2, x1/zoom, y1/zoom, x2/zoom, y2/zoom, null);
+				System.out.println(System.nanoTime() - startTime);
 			}
 		};
 		
