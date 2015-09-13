@@ -49,6 +49,7 @@ public class MainWindow {
 	int paletteXTile = 0;
 	int paletteYTile = 0;
 	int zoom = 1;
+	boolean needsRedraw = false;
 	ArrayDeque<int[]> tilesToUpdate = new ArrayDeque<>();
 	public MainWindow(){
 		properties = new MapProperties();
@@ -70,46 +71,22 @@ public class MainWindow {
 		});
 		mapPreview = new JPanel(){
 			@Override
-			protected void paintComponent(Graphics g) {/*
-				int scaledTileSize = properties.tile_side * zoom;
-				for (int y = 0; y < mapPreview.getHeight()/scaledTileSize; ++y){
-					for (int x = 0; x < mapPreview.getWidth()/scaledTileSize; ++x){
-						System.out.println("drawing at tile:" + x + " " + y);
-						int dx1 = x * scaledTileSize;
-						int dy1 = y * scaledTileSize;
-						int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
-						int sx1 = (properties.tileIDs[y][x] % tilesetWidth) * properties.tile_side;
-						int sy1 = (properties.tileIDs[y][x] / tilesetWidth) * properties.tile_side;
-						
-						g.drawImage(tilesetImage, dx1, dy1, dx1 + scaledTileSize, dy1 + scaledTileSize, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);   
-					}
-				}*/
+			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				long startTime = System.nanoTime();
 				Graphics2D g2D = (Graphics2D) g;
-				System.out.println(g.getClipBounds());
-				RenderingHints rh = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
-				
-				g2D.setRenderingHints(rh);
-				
-				System.out.println("started painting");
-				//super.paintComponent(g);
 				int zoom = (Integer)zoomLevel.getSelectedItem();
 				int x1 = -mapPreview.getX();
 				int x2 = x1 + scrollPane.getVisibleRect().width;
 				int y1 = -mapPreview.getY();
 				int y2 = y1 + scrollPane.getVisibleRect().height;
+				//if (mapPreviewImage.validate(frame.getGraphicsConfiguration()) != VolatileImage.IMAGE_OK || mapPreviewImage.validate(frame.getGraphicsConfiguration()) != VolatileImage.IMAGE_RESTORED){
+				if (mapPreviewImage.validate(frame.getGraphicsConfiguration()) == VolatileImage.IMAGE_INCOMPATIBLE){
+					initializeCanvas();
+					mapPreviewImage.validate(frame.getGraphicsConfiguration());
+					redrawCanvas();
+				}
+
 				g2D.drawImage(mapPreviewImage, x1, y1, x2, y2, x1/zoom, y1/zoom, x2/zoom, y2/zoom, null);
-				//g.drawImage(mapPreviewImage, 0, 0, null);
-				/*while (!tilesToUpdate.isEmpty()){
-					int[] tileInfo = tilesToUpdate.removeLast();
-					int dX = tileInfo[0] * zoom * properties.tile_side;
-					int dY = tileInfo[1] * zoom * properties.tile_side;
-					int sX = tileInfo[2] * properties.tile_side;
-					int sY = tileInfo[3] * properties.tile_side;
-					g.drawImage(mapPreviewImage, dX, dY, dX + zoom * properties.tile_side, dY + zoom * properties.tile_side, sX, sY, sX + properties.tile_side, sY + properties.tile_side, null);
-				}*/
-				System.out.println("finished painting in " + (System.nanoTime() - startTime));
 			}
 		};
 		
@@ -173,6 +150,10 @@ public class MainWindow {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
 		
+		initializeCanvas();
+		mapPreviewImage.validate(frame.getGraphicsConfiguration());
+		redrawCanvas();
+
 		paletteWindow.setLocation(0,0);
 		paletteWindow.setPreferredSize(new Dimension(200,400));
 		paletteWindow.pack();
@@ -185,15 +166,15 @@ public class MainWindow {
 	}
 	
 	public void updateMapDimensions(){
-		mapPreviewImage = frame.getGraphicsConfiguration().createCompatibleVolatileImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, 
-				properties.yscreens * properties.screen_ytiles * properties.tile_side, Transparency.OPAQUE);
-		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth(), mapPreviewImage.getHeight()));
-		mapPreview.revalidate();
-		scrollPane.repaint();
 		tilesetImage = tileset.processImage(properties.tileset, properties.tile_side, frame);
 		palettePanel.setPreferredSize(new Dimension(tilesetImage.getWidth(), tilesetImage.getHeight()));
 		properties.tileIDs = new int[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
 		paletteWindow.repaint();
+		initializeCanvas();
+		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth(), mapPreviewImage.getHeight()));
+		mapPreview.revalidate();
+		scrollPane.repaint();
+
 		Graphics g = mapPreviewImage.getGraphics();
 		g.setColor(Color.black);
 		g.fillRect(0, 0, mapPreviewImage.getWidth(), mapPreviewImage.getHeight());
@@ -234,6 +215,28 @@ public class MainWindow {
 		
 		zoom = (Integer)zoomLevel.getSelectedItem();
 
+	}
+	
+	public void initializeCanvas(){
+		mapPreviewImage = frame.getGraphicsConfiguration().createCompatibleVolatileImage(properties.xscreens * properties.screen_xtiles * properties.tile_side, 
+				properties.yscreens * properties.screen_ytiles * properties.tile_side, Transparency.OPAQUE);
+		needsRedraw = true;
+	}
+	
+	public void redrawCanvas(){
+		Graphics2D g = mapPreviewImage.createGraphics();
+		for (int y = 0; y < mapPreviewImage.getHeight()/properties.tile_side; ++y){
+			for (int x = 0; x < mapPreviewImage.getWidth()/properties.tile_side; ++x){
+				//System.out.println("drawing at tile:" + x + " " + y + " with palette ID: " + properties.tileIDs[y][x]);
+				int dx1 = x * properties.tile_side;
+				int dy1 = y * properties.tile_side;
+				int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
+				int sx1 = (properties.tileIDs[y][x] % tilesetWidth) * properties.tile_side;
+				int sy1 = (properties.tileIDs[y][x] / tilesetWidth) * properties.tile_side;
+				
+				g.drawImage(tilesetImage, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);   
+			}
+		}
 	}
 	class SettingsAction extends AbstractAction{
 		
