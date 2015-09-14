@@ -57,10 +57,10 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	}
 	
 	public void paintTile(int dxt, int dyt, int sxt, int syt){
-		System.out.print(properties.tileIDs[dyt][dxt] + " -> ");
+		System.out.print(properties.mapTiles[dyt][dxt] + " -> ");
 
-		properties.tileIDs[dyt][dxt] = gui.selectedTile;
-		System.out.println(properties.tileIDs[dyt][dxt]);
+		properties.mapTiles[dyt][dxt] = gui.selectedTile;
+		System.out.println(properties.mapTiles[dyt][dxt]);
 		int dxpx = dxt * properties.tile_side;
 		int dypx = dyt * properties.tile_side;
 		int sxpx = sxt * properties.tile_side;

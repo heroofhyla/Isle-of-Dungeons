@@ -160,7 +160,7 @@ public class MainWindow {
 		redrawCanvas();
 
 		paletteWindow.setLocation(0,0);
-		paletteWindow.setPreferredSize(new Dimension(200,400));
+		paletteWindow.setPreferredSize(new Dimension(200, 200));
 		paletteWindow.pack();
 		paletteWindow.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		
@@ -173,7 +173,7 @@ public class MainWindow {
 	public void updateMapDimensions(){
 		tilesetImage = tileset.processImage(properties.tileset, properties.tile_side, frame);
 		palettePanel.setPreferredSize(new Dimension(tilesetImage.getWidth(), tilesetImage.getHeight()));
-		properties.tileIDs = new int[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
+		properties.mapTiles = new int[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
 		paletteWindow.repaint();
 		initializeCanvas();
 		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth(), mapPreviewImage.getHeight()));
@@ -190,7 +190,7 @@ public class MainWindow {
 		paletteXTile = mousex/properties.tile_side;
 		paletteYTile = mousey/properties.tile_side;
 		int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
-		selectedTile = paletteYTile * tilesetWidth + paletteXTile;
+		selectedTile = tileset.getTile(paletteXTile, paletteYTile);
 		paletteWindow.repaint();
 	}
 	
@@ -236,8 +236,8 @@ public class MainWindow {
 				int dx1 = x * properties.tile_side;
 				int dy1 = y * properties.tile_side;
 				int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
-				int sx1 = (properties.tileIDs[y][x] % tilesetWidth) * properties.tile_side;
-				int sy1 = (properties.tileIDs[y][x] / tilesetWidth) * properties.tile_side;
+				int sx1 = (properties.mapTiles[y][x] % tilesetWidth) * properties.tile_side;
+				int sy1 = (properties.mapTiles[y][x] / tilesetWidth) * properties.tile_side;
 				
 				g.drawImage(tilesetImage, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);   
 			}
