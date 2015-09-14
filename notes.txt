@@ -1,0 +1,40 @@
+tileID format:
+Tiles are stored as signed ints, 
+if the number is positive, it is a straight tile lookup in the tile map
+if the number is negative, it is autotiling. The last few bits indicate the configuration
+
+each corner has five possible tiles:
+vertical
+horizontal
+inner corner
+outer corner
+full
+we need 3 bits per corner to assess every possible situation.
+However, we can discount a few possibilities
+A vertical in the top left, for example, can only have an inner corner or vertical in the bottom left
+A horizontal in the top left can only have an outer corner, horizontal, or full
+An inner corner in the top left can only have a vertical or inner corner
+An outer corner in the top left can only have a horizontal, full, or outer corner
+a full in the top left can only have a horizontal, full, or outer corner
+
+In general the method appears to be:
+choose one of 5 top left pieces
+for that, choose one of 3 pieces for each other corner
+9 bits are the minimum we can use to store this information
+
+However, the math becomes easier with 10 bits, and only use values 0-624.
+Let's consider the number 396. We'll rewrite it in base 5: 3041
+So the top left tile is type 3, the top right is type 0, the bottom left is type 4, and the bottom right is type 1
+
+Let's define FULL = 0, INNER CORNER = 1, OUTER CORNER = 2, VERTICAL = 3, HORIZONTAL = 4
+
+Obviously, this tile isn't really valid looking at the earlier rules, but it demonstrates how it can determine which tile chunks to use
+Assuming 32-bit integers, (a valid assumption on my machine), the layout of an int will be like this:
+10000000000000000000000000000000
+
+The first bit is the sign. 1 means negative, which means it's an autotile
+The last ten bits indicate which 4 chunks of the autotile to use
+The 21 bits in the middle are the tile ID. This is plenty of bits.
+
+Size considerations:
+Assuming a map of roughly zelda-ish proportions (16x16 screens, 20x15 tiles per screen), this map is going to take up 307200 bytes in memory. It will likely be more on disk if we decide to store map data in plain text. In UTF-8, it takes 1 byte to store an ascii character. Base 36 (the highest radix that Java supports) would be able to store the smallest int value in 8 characters. We also need to have spaces between characters. That means we would need roughly 5 MB to store the map on disk as plaintext. That's a lot.

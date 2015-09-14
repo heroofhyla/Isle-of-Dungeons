@@ -52,6 +52,8 @@ public class MainWindow {
 	boolean needsRedraw = false;
 	ArrayDeque<int[]> tilesToUpdate = new ArrayDeque<>();
 	public MainWindow(){
+		System.out.println(Integer.MAX_VALUE);
+		System.out.println(Integer.MIN_VALUE);
 		properties = new MapProperties();
 		
 		MapMouseListener mapListener = new MapMouseListener(this, properties);
