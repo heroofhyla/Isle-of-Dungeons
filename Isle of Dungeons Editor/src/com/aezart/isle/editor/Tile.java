@@ -2,8 +2,6 @@ package com.aezart.isle.editor;
 
 public class Tile implements Comparable<Tile>{
 	int tileID;
-	int mapx;
-	int mapy;
 	int paletteX;
 	int paletteY;
 	
@@ -24,6 +22,28 @@ public class Tile implements Comparable<Tile>{
 			return 1;
 		}else{
 			return this.tileID - t.tileID;
+		}
+	}
+	
+	public Tile(){
+	}
+	/**
+	 * @param Source tile to copy tileID, paletteX, and paletteY from
+	 * @param copyAutoTiling If true, keep the same autotiling configuration as the source tile
+	 */
+	public Tile(Tile t, boolean copyAutoTiling){
+		this.tileID = t.tileID;
+		this.paletteX = t.paletteX;
+		this.paletteY = t.paletteY;
+		if (copyAutoTiling){
+			tl = t.tl;
+			tm = t.tm;
+			tr = t.tr;
+			mr = t.mr;
+			br = t.br;
+			bm = t.bm;
+			bl = t.bl;
+			ml = t.ml;
 		}
 	}
 }

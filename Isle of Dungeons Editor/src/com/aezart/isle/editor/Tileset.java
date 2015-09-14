@@ -15,10 +15,14 @@ import javax.swing.JFrame;
 public class Tileset {
 	ArrayList<Tile> tiles = new ArrayList<>();
 	int tilesetWidth = 10;
-
+	BufferedImage palette;
+	MapProperties properties;
+	
+	public Tileset(MapProperties properties){
+		this.properties = properties;
+	}
 	public BufferedImage processImage(String filePath, int tileSize, JFrame frame){
 		tiles.clear();
-		BufferedImage palette;
 		try {
 			palette = ImageIO.read(this.getClass().getClassLoader().getResource(filePath));
 			
@@ -75,8 +79,18 @@ public class Tileset {
 		
 	}
 	
-	public int getTile(int tilesetX, int tilesetY){
+	public Tile getTile(int tilesetX, int tilesetY){
 		int id = tilesetX + tilesetY*tilesetWidth;
-		return tiles.get(id).tileID;
+		if (id < tiles.size()){
+		return tiles.get(id);
+		}else{
+			return null;
+		}
+	}
+	
+	public void drawTile(int xpx, int ypx, Tile t, Graphics g){
+		g.drawImage(palette, xpx, ypx, xpx + properties.tile_side,ypx + properties.tile_side, 
+				t.paletteX * properties.tile_side, t.paletteY * properties.tile_side, 
+				(t.paletteX+1) * properties.tile_side, (t.paletteY+1) * properties.tile_side, null);
 	}
 }

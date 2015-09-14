@@ -40,22 +40,21 @@ public class MainWindow {
 	JDialog paletteWindow;
 	JPanel palettePanel;
 	JScrollPane paletteScroll;
-	Tileset tileset = new Tileset();
+	Tileset tileset;
 	JScrollPane scrollPane;
 	BufferedImage tilesetImage;
 	
 	JComboBox<Integer> zoomLevel; 
-	int selectedTile = 0;
+	Tile selectedTile = null;
 	int paletteXTile = 0;
 	int paletteYTile = 0;
 	int zoom = 1;
 	boolean needsRedraw = false;
-	ArrayDeque<int[]> tilesToUpdate = new ArrayDeque<>();
 	public MainWindow(){
 		System.out.println(Integer.MAX_VALUE);
 		System.out.println(Integer.MIN_VALUE);
 		properties = new MapProperties();
-		
+		tileset = new Tileset(properties);
 		MapMouseListener mapListener = new MapMouseListener(this, properties);
 		
 		frame = new JFrame();
@@ -172,8 +171,14 @@ public class MainWindow {
 	
 	public void updateMapDimensions(){
 		tilesetImage = tileset.processImage(properties.tileset, properties.tile_side, frame);
+		selectedTile = tileset.getTile(0, 0);
 		palettePanel.setPreferredSize(new Dimension(tilesetImage.getWidth(), tilesetImage.getHeight()));
-		properties.mapTiles = new int[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
+		properties.mapTiles = new Tile[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
+		for (int i = 0; i < properties.mapTiles.length; ++i){
+			for (int k = 0; k < properties.mapTiles[i].length; ++k){
+				properties.mapTiles[i][k] = new Tile(tileset.getTile(0, 0), false);
+			}
+		}
 		paletteWindow.repaint();
 		initializeCanvas();
 		mapPreview.setPreferredSize(new Dimension(mapPreviewImage.getWidth(), mapPreviewImage.getHeight()));
@@ -187,10 +192,16 @@ public class MainWindow {
 	}
 	
 	public void updateSelectedTile(int mousex, int mousey){
+		int oldx = paletteXTile;
+		int oldy = paletteYTile;
 		paletteXTile = mousex/properties.tile_side;
 		paletteYTile = mousey/properties.tile_side;
-		int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
-		selectedTile = tileset.getTile(paletteXTile, paletteYTile);
+		if (tileset.getTile(paletteXTile, paletteYTile) != null){
+			selectedTile = tileset.getTile(paletteXTile, paletteYTile);
+		}else{
+			paletteXTile = oldx;
+			paletteYTile = oldy;
+		}
 		paletteWindow.repaint();
 	}
 	
@@ -235,11 +246,11 @@ public class MainWindow {
 				//System.out.println("drawing at tile:" + x + " " + y + " with palette ID: " + properties.tileIDs[y][x]);
 				int dx1 = x * properties.tile_side;
 				int dy1 = y * properties.tile_side;
-				int tilesetWidth = (int)Math.ceil((double)tilesetImage.getWidth()/properties.tile_side);
-				int sx1 = (properties.mapTiles[y][x] % tilesetWidth) * properties.tile_side;
-				int sy1 = (properties.mapTiles[y][x] / tilesetWidth) * properties.tile_side;
+				int sx1 = (properties.mapTiles[y][x].paletteX) * properties.tile_side;
+				int sy1 = (properties.mapTiles[y][x].paletteY) * properties.tile_side;
 				
-				g.drawImage(tilesetImage, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);   
+				//g.drawImage(tilesetP, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);
+				tileset.drawTile(dx1, dy1, properties.mapTiles[y][x], g);
 			}
 		}
 	}

@@ -59,7 +59,7 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	public void paintTile(int dxt, int dyt, int sxt, int syt){
 		System.out.print(properties.mapTiles[dyt][dxt] + " -> ");
 
-		properties.mapTiles[dyt][dxt] = gui.selectedTile;
+		properties.mapTiles[dyt][dxt] = new Tile(gui.selectedTile, false);
 		System.out.println(properties.mapTiles[dyt][dxt]);
 		int dxpx = dxt * properties.tile_side;
 		int dypx = dyt * properties.tile_side;
@@ -68,10 +68,10 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 		
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
 		//Graphics2D g = (Graphics2D)gui.mapPreview.getGraphics();
-		g.drawImage(gui.tilesetImage, dxpx, dypx, dxpx + properties.tile_side, dypx + properties.tile_side, sxpx, sypx, sxpx + properties.tile_side, sypx + properties.tile_side, null);
+		//g.drawImage(gui.tilesetImage, dxpx, dypx, dxpx + properties.tile_side, dypx + properties.tile_side, sxpx, sypx, sxpx + properties.tile_side, sypx + properties.tile_side, null);
+		gui.tileset.drawTile(dxpx, dypx, properties.mapTiles[dyt][dxt], g);
 		//gui.mapPreview.repaint(dxpx, dypx, dxpx + properties.tile_side, dypx + properties.tile_side);
 		int[] vals = {dxt, dyt, sxt, syt};
-		gui.tilesToUpdate.push(vals);
 
 	}
 	@Override

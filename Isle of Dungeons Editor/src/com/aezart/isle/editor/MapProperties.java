@@ -9,5 +9,5 @@ public class MapProperties {
 	public int xscreens = 5;
 	public int yscreens = 5;
 	
-	int[][] mapTiles = new int[screen_ytiles * yscreens][screen_xtiles * xscreens];
+	Tile[][] mapTiles = new Tile[screen_ytiles * yscreens][screen_xtiles * xscreens];
 }
