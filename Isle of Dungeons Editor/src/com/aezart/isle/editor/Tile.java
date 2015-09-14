@@ -35,6 +35,7 @@ public class Tile implements Comparable<Tile>{
 		this.tileID = t.tileID;
 		this.paletteX = t.paletteX;
 		this.paletteY = t.paletteY;
+		this.autotile = t.autotile;
 		if (copyAutoTiling){
 			tl = t.tl;
 			tm = t.tm;

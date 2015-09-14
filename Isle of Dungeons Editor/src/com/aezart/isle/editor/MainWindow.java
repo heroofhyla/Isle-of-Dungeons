@@ -6,17 +6,12 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
-import java.util.ArrayDeque;
-
-import javafx.scene.control.ScrollBar;
-
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -250,6 +245,7 @@ public class MainWindow {
 				int sy1 = (properties.mapTiles[y][x].paletteY) * properties.tile_side;
 				
 				//g.drawImage(tilesetP, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);
+				properties.updateAdjacency(x, y);
 				tileset.drawTile(dx1, dy1, properties.mapTiles[y][x], g);
 			}
 		}

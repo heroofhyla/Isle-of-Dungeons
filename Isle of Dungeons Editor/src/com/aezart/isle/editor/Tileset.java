@@ -1,5 +1,6 @@
 package com.aezart.isle.editor;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GraphicsConfiguration;
@@ -17,6 +18,7 @@ public class Tileset {
 	int tilesetWidth = 10;
 	BufferedImage palette;
 	MapProperties properties;
+	
 	
 	public Tileset(MapProperties properties){
 		this.properties = properties;
@@ -89,8 +91,189 @@ public class Tileset {
 	}
 	
 	public void drawTile(int xpx, int ypx, Tile t, Graphics g){
+		if (t.autotile){ //abandon all hope, ye who enter here
+			//basically, we need to divide the tile into 4 subtiles
+			//each of those subtiles decides what it needs to draw based on the 3 relevant adjacent tiles
+			//for instance the top-left subtile relies on the adjacent tiles west (ml), northwest (tl), and north (tm)
+			//TODO: Surely there's a better way to do this
+			int qtile = properties.tile_side/2;
+			int xoff = 0;
+			int yoff = 0;
+			//TL
+			if (t.ml){
+				if (t.tl){
+					if (t.tm){
+						xoff = 1; //full
+						yoff = 3;
+					}else{ //!t.tm
+						xoff = 1; //horz
+						yoff = 2;
+					}
+				}else{ //!t.tl
+					if (t.tm){
+						xoff = 2; //outer
+						yoff = 0;
+					}else{ //!t.tm
+						xoff = 1; //horz
+						yoff = 2;
+					}
+				}
+			}else{ //!t.ml
+				if (t.tl){
+					if (t.tm){
+						xoff = 0; //vert
+						yoff = 3;
+					}else{ //!t.tm
+						xoff = 0; //inner
+						yoff = 2;
+					}
+				}else{ //!t.tl
+					if (t.tm){
+						xoff = 0; //vert
+						yoff = 3;
+					}else{ //!t.tm
+						xoff = 0; //inner
+						yoff = 2;
+					}
+				}
+			}
+			int sx = t.paletteX * properties.tile_side + xoff * qtile;
+			int sy = t.paletteY * properties.tile_side + yoff * qtile;
+			g.drawImage(palette, xpx, ypx, xpx+qtile, ypx+qtile, sx, sy, sx + qtile, sy+qtile, null);
+			//TR
+			if (t.tm){
+				if (t.tr){
+					if (t.mr){
+						xoff = 1;//full
+						yoff = 3;
+					}else{ //!t.mr
+						xoff = 2; //vert
+						yoff = 3;
+					}
+				}else{ //!t.tr
+					if (t.mr){
+						xoff = 2;//outer
+						yoff = 0;
+					}else{ //!t.mr
+						xoff = 2; //vert
+						yoff = 3;
+					}
+				}
+			}else{ //!t.tm
+				if (t.tr){
+					if (t.mr){
+						xoff = 1;//horiz
+						yoff = 2;
+					}else{ //!t.mr
+						xoff = 2;//inner
+						yoff = 2;
+					}
+				}else{ //!t.tr
+					if (t.mr){
+						xoff = 1;//horiz
+						yoff = 2;
+					}else{ //!t.mr
+						xoff = 2;//inner
+						yoff = 2;
+					}
+				}
+			}
+			sx = t.paletteX * properties.tile_side + (xoff+1) * qtile;
+			sy = t.paletteY * properties.tile_side + yoff * qtile;
+			g.drawImage(palette, xpx+qtile, ypx, xpx+qtile + qtile, ypx+qtile, sx, sy, sx + qtile, sy+qtile, null);
+
+			//BL
+			if (t.ml){
+				if (t.bl){
+					if (t.bm){
+						xoff = 1;//full
+						yoff = 3;
+					}else{ //!t.bm
+						xoff = 1;//horiz
+						yoff = 4;
+					}
+				}else { //!t.bl
+					if (t.bm){
+						xoff = 2;//outer
+						yoff = 0;
+					}else{ //!t.bm
+						xoff = 1;//horiz
+						yoff = 4;
+					}
+				}
+			}else{ //!t.ml
+				if (t.bl){
+					if (t.bm){
+						xoff = 0;//vert
+						yoff = 3;
+					}else{ //!t.bm
+						xoff = 0;//inner
+						yoff = 4;
+					}
+				}else { //!t.bl
+					if (t.bm){
+						xoff = 0;//vert
+						yoff = 3;
+					}else{ //!t.bm
+						xoff = 0;//inner
+						yoff = 4;
+					}
+				}
+			}
+			sx = t.paletteX * properties.tile_side + xoff * qtile;
+			sy = t.paletteY * properties.tile_side + (yoff+1) * qtile;
+			g.drawImage(palette, xpx, ypx+qtile, xpx+qtile, ypx+qtile+qtile, sx, sy, sx + qtile, sy+qtile, null);
+
+			//BR
+			if (t.mr){
+				if (t.br){
+					if (t.bm){
+						xoff = 1;//full
+						yoff = 3;
+					}else{ //!t.bm
+						xoff = 1;//horiz
+						yoff = 4;
+					}
+				}else { //!t.br
+					if (t.bm){
+						xoff = 2;//outer
+						yoff = 0;
+					}else{ //!t.bm
+						xoff = 1;//horiz
+						yoff = 4;
+					}
+				}
+			}else{ //!t.mr
+				if (t.br){
+					if (t.bm){
+						xoff = 2;//vert
+						yoff = 3;
+					}else{ //!t.bm
+						xoff = 2;//inner
+						yoff = 4;
+					}
+				}else { //!t.br
+					if (t.bm){
+						xoff = 2;//vert
+						yoff = 3;
+					}else{ //!t.bm
+						xoff = 2;//inner
+						yoff = 4;
+					}
+				}
+			}
+			sx = t.paletteX * properties.tile_side + (xoff+1) * qtile;
+			sy = t.paletteY * properties.tile_side + (yoff+1) * qtile;
+			g.drawImage(palette, xpx+qtile, ypx+qtile, xpx+qtile+qtile, ypx+qtile+qtile, sx, sy, sx + qtile, sy+qtile, null);
+
+			//g.setColor(Color.GREEN);
+			//g.fillRect(xpx, ypx, properties.tile_side, properties.tile_side);
+		}else{
 		g.drawImage(palette, xpx, ypx, xpx + properties.tile_side,ypx + properties.tile_side, 
 				t.paletteX * properties.tile_side, t.paletteY * properties.tile_side, 
 				(t.paletteX+1) * properties.tile_side, (t.paletteY+1) * properties.tile_side, null);
+		}
 	}
+	
+	
 }
