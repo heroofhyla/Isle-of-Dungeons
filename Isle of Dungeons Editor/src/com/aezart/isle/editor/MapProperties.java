@@ -12,14 +12,15 @@ public class MapProperties {
 	Tile[][] mapTiles = new Tile[screen_ytiles * yscreens][screen_xtiles * xscreens];
 	
 	public void updateAdjacency(int xt, int yt){
-		if (xt < 0 || xt >= mapTiles[yt].length - 1){
+		if (yt < 0 || yt >= mapTiles.length){
 			System.out.println("NULL");
 			return;
 		}
-		if (yt < 0 || yt >= mapTiles.length - 1){
+		if (xt < 0 || xt >= mapTiles[yt].length){
 			System.out.println("NULL");
 			return;
 		}
+		
 		Tile t = mapTiles[yt][xt];
 		if (xt == 0){
 			t.tl = true;
@@ -29,6 +30,7 @@ public class MapProperties {
 			t.ml = (mapTiles[yt][xt-1].tileID == t.tileID);
 		}
 		if (xt == mapTiles[yt].length - 1){
+			System.out.println("right edge");
 			t.tr = true;
 			t.mr = true;
 			t.br = true;
@@ -42,7 +44,7 @@ public class MapProperties {
 		}else{
 			t.tm = (mapTiles[yt-1][xt].tileID == t.tileID);
 		}
-		if (yt == mapTiles.length){
+		if (yt == mapTiles.length - 1){
 			t.bl = true;
 			t.bm = true;
 			t.br = true;
@@ -54,15 +56,15 @@ public class MapProperties {
 			t.tl = mapTiles[yt-1][xt-1].tileID == t.tileID;
 		}
 		
-		if (xt > 0 && yt < mapTiles.length){
+		if (xt > 0 && yt < mapTiles.length - 1){
 			t.bl = mapTiles[yt+1][xt-1].tileID == t.tileID;
 		}
 		
-		if (xt < mapTiles[yt].length && yt > 0){
+		if (xt < mapTiles[yt].length -1 && yt > 0){
 			t.tr = mapTiles[yt-1][xt+1].tileID == t.tileID;
 		}
 		
-		if (xt < mapTiles[yt].length && yt < mapTiles.length){
+		if (xt < mapTiles[yt].length-1 && yt < mapTiles.length-1){
 			t.br = mapTiles[yt+1][xt+1].tileID == t.tileID;
 		}
 	}
