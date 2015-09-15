@@ -20,7 +20,6 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	}
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		System.out.println("received dragevent");
 		long startTime = System.nanoTime();
 		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
 		if (lastMouseX != Integer.MIN_VALUE){
@@ -32,7 +31,7 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 			int ydist = mty - lmty;
 			
 			if (Math.max(Math.abs(xdist), Math.abs(ydist)) <= 1){
-				paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
+				placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
 			}else{
 				double magnitude = Math.sqrt(xdist * xdist + ydist*ydist);
 				double uxdist = xdist/magnitude;
@@ -42,36 +41,40 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 				while (Math.abs(x - mtx) > 1 || Math.abs(y - mty) > 1){
 					x += uxdist;
 					y += uydist;
-					paintTile((int)x, (int)y, gui.paletteXTile, gui.paletteYTile);
+					placeTile((int)x, (int)y, gui.paletteXTile, gui.paletteYTile);
 					
 				}
 			}
 		}
-		paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
+		placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
 		gui.frame.repaint();
 		
 		lastMouseX = e.getX();
 		lastMouseY = e.getY();
-		System.out.println("dragevent finished in " + (System.nanoTime() - startTime)/1000000);
 
 	}
 	
-	public void paintTile(int dxt, int dyt, int sxt, int syt){
-		System.out.print(properties.tileIDs[dyt][dxt] + " -> ");
-
-		properties.tileIDs[dyt][dxt] = gui.selectedTile;
-		System.out.println(properties.tileIDs[dyt][dxt]);
-		int dxpx = dxt * properties.tile_side;
-		int dypx = dyt * properties.tile_side;
-		int sxpx = sxt * properties.tile_side;
-		int sypx = syt * properties.tile_side;
+	public void placeTile(int dxt, int dyt, int sxt, int syt){
+		System.out.print(properties.mapTiles[dyt][dxt].tileID + " -> ");
+		Tile t = gui.selectedTile;
 		
+		properties.mapTiles[dyt][dxt] = new Tile(t, false);
+		System.out.println(properties.mapTiles[dyt][dxt].tileID);
+
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
-		//Graphics2D g = (Graphics2D)gui.mapPreview.getGraphics();
-		g.drawImage(gui.tilesetImage, dxpx, dypx, dxpx + properties.tile_side, dypx + properties.tile_side, sxpx, sypx, sxpx + properties.tile_side, sypx + properties.tile_side, null);
-		//gui.mapPreview.repaint(dxpx, dypx, dxpx + properties.tile_side, dypx + properties.tile_side);
-		int[] vals = {dxt, dyt, sxt, syt};
-		gui.tilesToUpdate.push(vals);
+		for (int i = dxt - 1; i <= dxt +1; ++i){
+			for (int k = dyt -1; k <= dyt + 1; ++k){
+				if (k < properties.mapTiles.length && k >= 0 && i >= 0 && i < properties.mapTiles[k].length){
+					properties.updateAdjacency(i, k);
+					int dxpx = i * properties.tile_side;
+					int dypx = k * properties.tile_side;
+					gui.tileset.drawTile(dxpx, dypx, properties.mapTiles[k][i], g);
+					gui.frame.repaint();
+				}
+			}
+		}
+		
+		
 
 	}
 	@Override
@@ -101,7 +104,7 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	public void mousePressed(MouseEvent e) {
 		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
 
-		paintTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
+		placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
 		gui.frame.repaint();
 
 		}
