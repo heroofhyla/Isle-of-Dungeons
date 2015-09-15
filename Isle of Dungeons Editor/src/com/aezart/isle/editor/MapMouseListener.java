@@ -20,7 +20,6 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	}
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		System.out.println("received dragevent");
 		long startTime = System.nanoTime();
 		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
 		if (lastMouseX != Integer.MIN_VALUE){
@@ -52,16 +51,16 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 		
 		lastMouseX = e.getX();
 		lastMouseY = e.getY();
-		System.out.println("dragevent finished in " + (System.nanoTime() - startTime)/1000000);
 
 	}
 	
 	public void placeTile(int dxt, int dyt, int sxt, int syt){
-		System.out.print(properties.mapTiles[dyt][dxt] + " -> ");
-		Tile t = new Tile(gui.selectedTile, false);
+		System.out.print(properties.mapTiles[dyt][dxt].tileID + " -> ");
+		Tile t = gui.selectedTile;
 		
 		properties.mapTiles[dyt][dxt] = new Tile(t, false);
-		
+		System.out.println(properties.mapTiles[dyt][dxt].tileID);
+
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
 		for (int i = dxt - 1; i <= dxt +1; ++i){
 			for (int k = dyt -1; k <= dyt + 1; ++k){

@@ -15,7 +15,7 @@ import javax.swing.JFrame;
 
 public class Tileset {
 	ArrayList<Tile> tiles = new ArrayList<>();
-	int tilesetWidth = 10;
+	int tilesetWidth;
 	BufferedImage palette;
 	MapProperties properties;
 	
@@ -37,20 +37,24 @@ public class Tileset {
 					if (i > 1 || (i == 0 && k%3 == 0)){
 						Tile t = new Tile();
 						t.tileID = nextId;
-						++nextId;
+						//++nextId;
 						t.paletteX = i;
 						t.paletteY = k;
 						
 						//if a tile is in the first column of the file, it is an autotile
 						if (i == 0){
 							t.autotile = true;
+							++nextId;
+							t.tileID = nextId;
+
 						}
 						tiles.add(t);
 					}
 					
 				}
-				Collections.sort(tiles);
 			}
+			Collections.sort(tiles);
+			tilesetWidth = tiles.size()/nextId;
 			int tilesetHeight = (int)Math.ceil(tiles.size()/(double)tilesetWidth);
 			BufferedImage b = frame.getGraphicsConfiguration().createCompatibleImage(tilesetWidth * tileSize, tilesetHeight * tileSize, Transparency.OPAQUE);
 			Graphics2D g = b.createGraphics();

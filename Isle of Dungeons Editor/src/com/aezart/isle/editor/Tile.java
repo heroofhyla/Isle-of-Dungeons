@@ -16,13 +16,14 @@ public class Tile implements Comparable<Tile>{
 	boolean ml;
 	@Override
 	public int compareTo(Tile t) {
-		if (this.autotile && ! t.autotile){
+		/*if (this.autotile && ! t.autotile){
 			return -1;
 		}else if (!this.autotile && t.autotile){
 			return 1;
 		}else{
 			return this.tileID - t.tileID;
-		}
+		}*/
+		return this.tileID - t.tileID;
 	}
 	
 	public Tile(){
