@@ -13,7 +13,7 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	MapProperties properties;
 	int lastMouseX = Integer.MIN_VALUE;
 	int lastMouseY = Integer.MIN_VALUE;
-
+	boolean shiftdragging;
 	public MapMouseListener(MainWindow gui, MapProperties properties){
 		this.gui = gui;
 		this.properties = properties;
@@ -31,7 +31,13 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 			int ydist = mty - lmty;
 			
 			if (Math.max(Math.abs(xdist), Math.abs(ydist)) <= 1){
-				placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
+				if (shiftdragging){
+					System.out.println("shift start drag");
+					placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), true);
+				}else{
+					System.out.println("not shift dragging");
+					placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), false);
+				}
 			}else{
 				double magnitude = Math.sqrt(xdist * xdist + ydist*ydist);
 				double uxdist = xdist/magnitude;
@@ -41,12 +47,22 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 				while (Math.abs(x - mtx) > 1 || Math.abs(y - mty) > 1){
 					x += uxdist;
 					y += uydist;
-					placeTile((int)x, (int)y, gui.paletteXTile, gui.paletteYTile);
+					if(shiftdragging){
+						System.out.println("shift continue drag");
+						placeTile((int)x, (int)y, true);
+					}else{
+						System.out.println("not shift dragging");
+						placeTile((int)x, (int)y, false);
+					}
 					
 				}
 			}
 		}
-		placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
+		if (shiftdragging){
+			placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), true);
+		}else{
+			placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), false);
+		}
 		gui.frame.repaint();
 		
 		lastMouseX = e.getX();
@@ -54,18 +70,25 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 
 	}
 	
-	public void placeTile(int dxt, int dyt, int sxt, int syt){
-		System.out.print(properties.mapTiles[dyt][dxt].tileID + " -> ");
-		Tile t = gui.selectedTile;
+	public void placeTile(int dxt, int dyt, boolean maintainAdjacency){
 		
-		properties.mapTiles[dyt][dxt] = new Tile(t, false);
+		Tile t = gui.selectedTile;
+		if (maintainAdjacency){
+			properties.mapTiles[dyt][dxt] = new Tile(t, true);
+			System.out.println("not updating adjacency");
+		}else{
+			properties.mapTiles[dyt][dxt] = new Tile(t, false);
+		}
 		System.out.println(properties.mapTiles[dyt][dxt].tileID);
 
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
 		for (int i = dxt - 1; i <= dxt +1; ++i){
 			for (int k = dyt -1; k <= dyt + 1; ++k){
 				if (k < properties.mapTiles.length && k >= 0 && i >= 0 && i < properties.mapTiles[k].length){
-					properties.updateAdjacency(i, k);
+					if (!maintainAdjacency){
+						System.out.println("updating adjacency");
+						properties.updateAdjacency(i, k);
+					}
 					int dxpx = i * properties.tile_side;
 					int dypx = k * properties.tile_side;
 					gui.tileset.drawTile(dxpx, dypx, properties.mapTiles[k][i], g);
@@ -73,8 +96,6 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 				}
 			}
 		}
-		
-		
 
 	}
 	@Override
@@ -102,17 +123,40 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 
 	@Override
 	public void mousePressed(MouseEvent e) {
+		shiftdragging = ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0);
 		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
+		
+	
+		if (e.getButton() == MouseEvent.BUTTON1){
+			if (shiftdragging){
+				placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), true);
 
-		placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), gui.paletteXTile, gui.paletteYTile);
-		gui.frame.repaint();
+			}else{
+				placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), false);
 
+			}
+			gui.frame.repaint();
 		}
+		if (e.getButton() == MouseEvent.BUTTON3){
+			Tile t;
+			if (shiftdragging){
+				System.out.println("shift down");
+				t = new Tile(properties.mapTiles[tileFromMouse(e.getY(), properties.tile_side * zoom)][tileFromMouse(e.getX(), properties.tile_side * zoom)], true);
+			}else{
+				t = new Tile(properties.mapTiles[tileFromMouse(e.getY(), properties.tile_side * zoom)][tileFromMouse(e.getX(), properties.tile_side * zoom)], false);
+			}
+			
+			gui.updateSelectedTile(t);
+			gui.palettePanel.repaint();
+		}
+
+	}
 
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		lastMouseX = Integer.MIN_VALUE;
 		lastMouseY = Integer.MIN_VALUE;
+		gui.redrawCanvas();
 		
 	}
 	

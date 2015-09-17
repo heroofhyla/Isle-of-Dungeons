@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -85,6 +86,14 @@ public class MainWindow {
 				}
 
 				g2D.drawImage(mapPreviewImage, x1, y1, x2, y2, x1/zoom, y1/zoom, x2/zoom, y2/zoom, null);
+				
+				g2D.setColor(Color.black);
+				for (int x = 0; x < Math.min(mapPreview.getWidth(),mapPreviewImage.getWidth()*zoom); x += zoom * properties.tile_side){
+					for (int y = 0; y < Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom); y += zoom*properties.tile_side){
+						g.drawLine(x, 0, x, Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom));
+						g.drawLine(0, y, Math.min(mapPreview.getWidth(), mapPreviewImage.getWidth() * zoom), y);
+					}
+				}
 				System.out.println(System.nanoTime() - startTime);
 			}
 		};
@@ -105,6 +114,8 @@ public class MainWindow {
 		palettePanel = new JPanel(){
 			@Override
 			protected void paintComponent(Graphics g) {
+				g.setColor(Color.white);
+				g.fillRect(0, 0, palettePanel.getWidth(), palettePanel.getHeight());
 				g.drawImage(tilesetImage,0,0,null);
 				g.setColor(Color.black);
 				g.drawRect(paletteXTile * properties.tile_side, paletteYTile * properties.tile_side, properties.tile_side, properties.tile_side);
@@ -171,7 +182,7 @@ public class MainWindow {
 		properties.mapTiles = new Tile[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
 		for (int i = 0; i < properties.mapTiles.length; ++i){
 			for (int k = 0; k < properties.mapTiles[i].length; ++k){
-				properties.mapTiles[i][k] = new Tile(tileset.getTile(0, 0), false);
+				properties.mapTiles[i][k] = new Tile(tileset.getTile(0, 0), true);
 			}
 		}
 		paletteWindow.repaint();
@@ -198,6 +209,13 @@ public class MainWindow {
 			paletteYTile = oldy;
 		}
 		paletteWindow.repaint();
+	}
+	
+	public void updateSelectedTile(Tile t){
+		paletteXTile = -1;
+		paletteYTile = -1;
+		
+		selectedTile = t;
 	}
 	
 	public void reZoom(){
@@ -245,7 +263,7 @@ public class MainWindow {
 				int sy1 = (properties.mapTiles[y][x].paletteY) * properties.tile_side;
 				
 				//g.drawImage(tilesetP, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);
-				properties.updateAdjacency(x, y);
+				//properties.updateAdjacency(x, y);
 				tileset.drawTile(dx1, dy1, properties.mapTiles[y][x], g);
 			}
 		}

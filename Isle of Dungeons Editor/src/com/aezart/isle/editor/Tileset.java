@@ -44,6 +44,14 @@ public class Tileset {
 						//if a tile is in the first column of the file, it is an autotile
 						if (i == 0){
 							t.autotile = true;
+							t.tl = true;
+							t.tm = true;
+							t.tr = true;
+							t.mr = true;
+							t.br = true;
+							t.bm = true;
+							t.bl = true;
+							t.ml = true;
 							++nextId;
 							t.tileID = nextId;
 
