@@ -27,7 +27,7 @@ public class MapProperties {
 			t.ml = true;
 			t.bl = true;
 		}else{
-			t.ml = (mapTiles[yt][xt-1].tileID == t.tileID);
+			t.ml = (mapTiles[yt][xt-1].autotilingType == t.autotilingType);
 		}
 		if (xt == mapTiles[yt].length - 1){
 			System.out.println("right edge");
@@ -35,37 +35,37 @@ public class MapProperties {
 			t.mr = true;
 			t.br = true;
 		}else{
-			t.mr = (mapTiles[yt][xt+1].tileID == t.tileID);
+			t.mr = (mapTiles[yt][xt+1].autotilingType == t.autotilingType);
 		}
 		if (yt == 0){
 			t.tl = true;
 			t.tm = true;
 			t.tr = true;
 		}else{
-			t.tm = (mapTiles[yt-1][xt].tileID == t.tileID);
+			t.tm = (mapTiles[yt-1][xt].autotilingType == t.autotilingType);
 		}
 		if (yt == mapTiles.length - 1){
 			t.bl = true;
 			t.bm = true;
 			t.br = true;
 		}else{
-			t.bm = (mapTiles[yt+1][xt].tileID == t.tileID);
+			t.bm = (mapTiles[yt+1][xt].autotilingType == t.autotilingType);
 		}
 		
 		if (xt > 0 && yt > 0){
-			t.tl = mapTiles[yt-1][xt-1].tileID == t.tileID;
+			t.tl = mapTiles[yt-1][xt-1].autotilingType == t.autotilingType;
 		}
 		
 		if (xt > 0 && yt < mapTiles.length - 1){
-			t.bl = mapTiles[yt+1][xt-1].tileID == t.tileID;
+			t.bl = mapTiles[yt+1][xt-1].autotilingType == t.autotilingType;
 		}
 		
 		if (xt < mapTiles[yt].length -1 && yt > 0){
-			t.tr = mapTiles[yt-1][xt+1].tileID == t.tileID;
+			t.tr = mapTiles[yt-1][xt+1].autotilingType == t.autotilingType;
 		}
 		
 		if (xt < mapTiles[yt].length-1 && yt < mapTiles.length-1){
-			t.br = mapTiles[yt+1][xt+1].tileID == t.tileID;
+			t.br = mapTiles[yt+1][xt+1].autotilingType == t.autotilingType;
 		}
 	}
 }

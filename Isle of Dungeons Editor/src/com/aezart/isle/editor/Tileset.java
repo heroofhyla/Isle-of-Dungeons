@@ -36,7 +36,7 @@ public class Tileset {
 					//if a tile is in the second column of the file, it is supplementary tiles for the autotile, so we don't need it
 					if (i > 1 || (i == 0 && k%3 == 0)){
 						Tile t = new Tile();
-						t.tileID = nextId;
+						t.autotilingType = nextId;
 						//++nextId;
 						t.paletteX = i;
 						t.paletteY = k;
@@ -53,7 +53,7 @@ public class Tileset {
 							t.bl = true;
 							t.ml = true;
 							++nextId;
-							t.tileID = nextId;
+							t.autotilingType = nextId;
 
 						}
 						tiles.add(t);
@@ -62,6 +62,9 @@ public class Tileset {
 				}
 			}
 			Collections.sort(tiles);
+			for (int i = 0; i < tiles.size(); ++i){
+				tiles.get(i).tilesetPosition = i;
+			}
 			tilesetWidth = tiles.size()/nextId;
 			int tilesetHeight = (int)Math.ceil(tiles.size()/(double)tilesetWidth);
 			BufferedImage b = frame.getGraphicsConfiguration().createCompatibleImage(tilesetWidth * tileSize, tilesetHeight * tileSize, Transparency.OPAQUE);

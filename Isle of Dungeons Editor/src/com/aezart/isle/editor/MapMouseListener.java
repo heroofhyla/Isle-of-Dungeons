@@ -79,7 +79,7 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 		}else{
 			properties.mapTiles[dyt][dxt] = new Tile(t, false);
 		}
-		System.out.println(properties.mapTiles[dyt][dxt].tileID);
+		System.out.println(properties.mapTiles[dyt][dxt].autotilingType);
 
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
 		for (int i = dxt - 1; i <= dxt +1; ++i){

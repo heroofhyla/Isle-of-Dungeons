@@ -12,11 +12,18 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -31,6 +38,7 @@ public class MainWindow {
 	VolatileImage mapPreviewImage;
 	MapSettingsPanel mapSettingsPanel;
 	JButton mapSettings;
+	JButton saveButton;
 	MapProperties properties;
 	JToolBar toolbar = new JToolBar();
 	JDialog paletteWindow;
@@ -106,6 +114,7 @@ public class MainWindow {
 		scrollPane.setPreferredSize(new Dimension(640,480));
 		toolbar.add(zoomLabel);
 		toolbar.add(zoomLevel);
+		toolbar.add(new JButton(new SaveAction()));
 		toolbar.add(new JButton(new SettingsAction()));
 		toolbar.setFloatable(false);
 		toolbar.setLayout(new FlowLayout());
@@ -295,6 +304,55 @@ public class MainWindow {
 				updateMapDimensions();
 			}
 		}	
+	}
+	
+	class SaveAction extends AbstractAction{
+
+		public SaveAction(){
+			super("Save");
+		}
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			JFileChooser fileChooser = new JFileChooser();
+			int buttonResult = fileChooser.showSaveDialog(frame);
+			if (buttonResult == JFileChooser.APPROVE_OPTION){
+				File f = fileChooser.getSelectedFile();
+				int overwrite = JOptionPane.OK_OPTION;
+				if (f.exists()){
+					overwrite = JOptionPane.showConfirmDialog(frame, "File already exists, overwrite?", "Overwrite File", JOptionPane.OK_CANCEL_OPTION);
+				}
+				if (overwrite == JOptionPane.OK_OPTION){
+					try(PrintStream ps = new PrintStream(f)){
+						ps.println(properties.name);
+						ps.println(properties.screen_xtiles + " " + properties.screen_ytiles + " " + properties.xscreens + " " + properties.yscreens);
+						for (int k = 0; k < properties.mapTiles.length; ++k){
+							for (int i = 0; i < properties.mapTiles[k].length; ++i){
+								Tile t = properties.mapTiles[k][i];
+								
+								int tl = (t.tl?1:0);
+								int tm = (t.tm?1:0);
+								int tr = (t.tr?1:0);
+								int mr = (t.mr?1:0);
+								int br = (t.br?1:0);
+								int bm = (t.bm?1:0);
+								int bl = (t.bl?1:0);
+								int ml = (t.ml?1:0);
+								
+								int adjacencynum = tl + 2* tm + 4*tr + 8*mr + 16*br + 32*bm + 64 * bl + 128 * ml; 
+								ps.print(t.tilesetPosition + " " + Integer.toString(adjacencynum, 36) + " ");
+							}
+							ps.println();
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+			}
+			
+		}
+		
 	}
 	
 }
