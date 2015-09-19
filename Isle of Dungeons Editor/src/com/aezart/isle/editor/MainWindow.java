@@ -12,12 +12,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -33,6 +38,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 public class MainWindow {
+	public static final byte FORMAT_VERSION_NUMBER = 1;
+	
 	JFrame frame;
 	JPanel mapPreview;
 	VolatileImage mapPreviewImage;
@@ -322,26 +329,41 @@ public class MainWindow {
 					overwrite = JOptionPane.showConfirmDialog(frame, "File already exists, overwrite?", "Overwrite File", JOptionPane.OK_CANCEL_OPTION);
 				}
 				if (overwrite == JOptionPane.OK_OPTION){
-					try(PrintStream ps = new PrintStream(f)){
-						ps.println(properties.name);
-						ps.println(properties.screen_xtiles + " " + properties.screen_ytiles + " " + properties.xscreens + " " + properties.yscreens);
-						for (int k = 0; k < properties.mapTiles.length; ++k){
-							for (int i = 0; i < properties.mapTiles[k].length; ++i){
+					try(DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(f)))){
+						
+						ByteBuffer headerBuffer = ByteBuffer.allocate(8);
+						headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
+						headerBuffer.putShort((short)12354);
+						headerBuffer.putShort((short)12356);
+						headerBuffer.putShort((short)12391);
+						headerBuffer.putShort((short)12416);
+						dos.write(headerBuffer.array());
+						dos.writeByte(FORMAT_VERSION_NUMBER);
+						dos.writeShort(properties.screen_xtiles);
+						dos.writeShort(properties.screen_ytiles);
+						dos.writeShort(properties.xscreens);
+						dos.writeShort(properties.yscreens);
+						for (short k = 0; k < properties.mapTiles.length; ++k){
+							for (short i = 0; i < properties.mapTiles[k].length; ++i){
 								Tile t = properties.mapTiles[k][i];
 								
-								int tl = (t.tl?1:0);
-								int tm = (t.tm?1:0);
-								int tr = (t.tr?1:0);
-								int mr = (t.mr?1:0);
-								int br = (t.br?1:0);
-								int bm = (t.bm?1:0);
-								int bl = (t.bl?1:0);
-								int ml = (t.ml?1:0);
+								byte tl = (byte) (t.tl?1:0);
+								byte tm = (byte) (t.tm?1:0);
+								byte tr = (byte) (t.tr?1:0);
+								byte mr = (byte) (t.mr?1:0);
+								byte br = (byte) (t.br?1:0);
+								byte bm = (byte) (t.bm?1:0);
+								byte bl = (byte) (t.bl?1:0);
+								byte ml = (byte) (t.ml?1:0);
 								
-								int adjacencynum = tl + 2* tm + 4*tr + 8*mr + 16*br + 32*bm + 64 * bl + 128 * ml; 
-								ps.print(t.tilesetPosition + " " + Integer.toString(adjacencynum, 36) + " ");
+								int adjacencynum = tl + 2* tm + 4*tr + 8*mr + 16*br + 32*bm + 64 * bl - 128 * ml; //bytes are signed in java, so ml bit has to be negative
+								if (adjacencynum < Byte.MIN_VALUE || adjacencynum > Byte.MAX_VALUE){
+									System.out.println("Bad math, numbnuts");
+								}
+								
+								dos.writeShort(t.tilesetPosition);
+								dos.writeByte((byte)adjacencynum);
 							}
-							ps.println();
 						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block

@@ -1,10 +1,10 @@
 package com.aezart.isle.editor;
 
 public class Tile implements Comparable<Tile>{
-	int autotilingType;
-	int tilesetPosition;
-	int paletteX;
-	int paletteY;
+	short autotilingType;
+	short tilesetPosition;
+	short paletteX;
+	short paletteY;
 	
 	boolean autotile;
 	boolean tl;

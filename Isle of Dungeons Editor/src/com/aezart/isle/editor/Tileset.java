@@ -1,9 +1,7 @@
 package com.aezart.isle.editor;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GraphicsConfiguration;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -30,9 +28,9 @@ public class Tileset {
 			
 			int xTiles = (int)Math.ceil(palette.getWidth()/(double)tileSize);
 			int yTiles = (int)Math.ceil(palette.getHeight()/(double)tileSize);
-			int nextId = 0;
-			for (int k = 0; k < yTiles; ++k){
-				for (int i = 0; i < xTiles; ++i){
+			short nextId = 0;
+			for (short k = 0; k < yTiles; ++k){
+				for (short i = 0; i < xTiles; ++i){
 					//if a tile is in the second column of the file, it is supplementary tiles for the autotile, so we don't need it
 					if (i > 1 || (i == 0 && k%3 == 0)){
 						Tile t = new Tile();
@@ -62,7 +60,7 @@ public class Tileset {
 				}
 			}
 			Collections.sort(tiles);
-			for (int i = 0; i < tiles.size(); ++i){
+			for (short i = 0; i < tiles.size(); ++i){
 				tiles.get(i).tilesetPosition = i;
 			}
 			tilesetWidth = tiles.size()/nextId;
