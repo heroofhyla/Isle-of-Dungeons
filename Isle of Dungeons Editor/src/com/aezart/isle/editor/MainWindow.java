@@ -320,6 +320,21 @@ public class MainWindow {
 		}
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
+			/*
+			 * Save file format:
+			 * 	Header: 4 short values in sequence, written in little endian (so they are in the right order as UTF-8 chars): 12354 12356 12391 12416
+			 * 			This is "あいでも" in utf-8
+			 * 	Version number: 1 byte
+			 * 	short: screen_xtiles
+			 * 	short: screen_ytiles
+			 * 	short: xscreens
+			 * 	short: yscreens
+			 * 	
+			 * 	This leading information is followed by the rest of the map data, where each tile is indicated as follows:
+			 * 	short: tilesetPosition
+			 * 	byte: adjacency, where each bit represents adjacency on one face. 
+			 * 			The least significant digit is the top left corner, and you go clockwise as you increase significance 
+			 */
 			JFileChooser fileChooser = new JFileChooser();
 			int buttonResult = fileChooser.showSaveDialog(frame);
 			if (buttonResult == JFileChooser.APPROVE_OPTION){
