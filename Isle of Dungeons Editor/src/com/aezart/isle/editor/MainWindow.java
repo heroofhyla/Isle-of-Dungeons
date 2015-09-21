@@ -12,10 +12,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -23,6 +28,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -55,15 +61,14 @@ public class MainWindow {
 	JScrollPane scrollPane;
 	BufferedImage tilesetImage;
 	
-	JComboBox<Integer> zoomLevel; 
+	JComboBox<Integer> zoomLevel;
+	JFileChooser fileChooser = new JFileChooser();
 	Tile selectedTile = null;
 	int paletteXTile = 0;
 	int paletteYTile = 0;
 	int zoom = 1;
 	boolean needsRedraw = false;
 	public MainWindow(){
-		System.out.println(Integer.MAX_VALUE);
-		System.out.println(Integer.MIN_VALUE);
 		properties = new MapProperties();
 		tileset = new Tileset(properties);
 		MapMouseListener mapListener = new MapMouseListener(this, properties);
@@ -85,8 +90,6 @@ public class MainWindow {
 			@Override
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				Long startTime = System.nanoTime();
-
 				Graphics2D g2D = (Graphics2D) g;
 				int zoom = (Integer)zoomLevel.getSelectedItem();
 				int x1 = -mapPreview.getX();
@@ -109,7 +112,6 @@ public class MainWindow {
 						g.drawLine(0, y, Math.min(mapPreview.getWidth(), mapPreviewImage.getWidth() * zoom), y);
 					}
 				}
-				System.out.println(System.nanoTime() - startTime);
 			}
 		};
 		
@@ -122,6 +124,7 @@ public class MainWindow {
 		toolbar.add(zoomLabel);
 		toolbar.add(zoomLevel);
 		toolbar.add(new JButton(new SaveAction()));
+		toolbar.add(new JButton(new LoadAction()));
 		toolbar.add(new JButton(new SettingsAction()));
 		toolbar.setFloatable(false);
 		toolbar.setLayout(new FlowLayout());
@@ -313,6 +316,96 @@ public class MainWindow {
 		}	
 	}
 	
+	class LoadAction extends AbstractAction{
+		public LoadAction(){
+			super("Open");
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			int result = fileChooser.showOpenDialog(frame);
+			if (result == JFileChooser.APPROVE_OPTION){
+				File f = fileChooser.getSelectedFile();
+				
+				try(DataInputStream dis = new DataInputStream(new BufferedInputStream(new FileInputStream(f)))){
+					
+					ByteBuffer headerBuffer = ByteBuffer.allocate(8);
+					
+					for (int i = 0; i < 8; ++i){
+						headerBuffer.put(dis.readByte());
+					}				
+					
+					boolean validHeader = true;
+					headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
+					headerBuffer.position(0);
+					
+					if (12354 != headerBuffer.getShort()){
+						validHeader = false;
+					}
+					if (12356 != headerBuffer.getShort()){
+						validHeader = false;
+					}
+					if (12391 != headerBuffer.getShort()){
+						validHeader = false;
+					}
+					if (12416 != headerBuffer.getShort()){
+						validHeader = false;
+					}
+					if (!validHeader){
+						JOptionPane.showMessageDialog(frame, "This file does not appear to be an Isle of Dungeons Editor map.");
+						return;
+					}
+					
+					byte versionNo = dis.readByte();
+					
+					properties.screen_xtiles = dis.readShort();
+					properties.screen_ytiles = dis.readShort();
+					properties.xscreens = dis.readShort();
+					properties.yscreens = dis.readShort();
+					
+					updateMapDimensions();
+					boolean eof = false;
+					int count = 0;
+					while (!eof){
+						try{
+						short tilesetPos = dis.readShort();
+						byte adjacencies = dis.readByte();
+						Tile t = new Tile(tileset.tiles.get(tilesetPos), false);
+						t.tl = (adjacencies >> 0 & 1) == 1;
+						t.tm = (adjacencies >> 1 & 1) == 1;
+						t.tr = (adjacencies >> 2 & 1) == 1;
+						t.mr = (adjacencies >> 3 & 1) == 1;
+						t.br = (adjacencies >> 4 & 1) == 1;
+						t.bm = (adjacencies >> 5 & 1) == 1;
+						t.bl = (adjacencies >> 6 & 1) == 1;
+						t.ml = (adjacencies >> 7 & 1) == 1;
+						//TODO: Adjacencies!
+						
+						properties.mapTiles[count/properties.mapTiles[0].length][count%properties.mapTiles[0].length] = t;
+
+						++count;
+						}catch (EOFException e){
+							eof = true;
+						}
+								
+					}
+					initializeCanvas();
+					mapPreviewImage.validate(frame.getGraphicsConfiguration());
+					redrawCanvas();
+
+					
+					redrawCanvas();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	class SaveAction extends AbstractAction{
 
 		public SaveAction(){
@@ -335,7 +428,6 @@ public class MainWindow {
 			 * 	byte: adjacency, where each bit represents adjacency on one face. 
 			 * 			The least significant digit is the top left corner, and you go clockwise as you increase significance 
 			 */
-			JFileChooser fileChooser = new JFileChooser();
 			int buttonResult = fileChooser.showSaveDialog(frame);
 			if (buttonResult == JFileChooser.APPROVE_OPTION){
 				File f = fileChooser.getSelectedFile();
@@ -352,6 +444,8 @@ public class MainWindow {
 						headerBuffer.putShort((short)12356);
 						headerBuffer.putShort((short)12391);
 						headerBuffer.putShort((short)12416);
+						
+						headerBuffer.position(0);
 						dos.write(headerBuffer.array());
 						dos.writeByte(FORMAT_VERSION_NUMBER);
 						dos.writeShort(properties.screen_xtiles);
@@ -371,11 +465,7 @@ public class MainWindow {
 								byte bl = (byte) (t.bl?1:0);
 								byte ml = (byte) (t.ml?1:0);
 								
-								int adjacencynum = tl + 2* tm + 4*tr + 8*mr + 16*br + 32*bm + 64 * bl - 128 * ml; //bytes are signed in java, so ml bit has to be negative
-								if (adjacencynum < Byte.MIN_VALUE || adjacencynum > Byte.MAX_VALUE){
-									System.out.println("Bad math, numbnuts");
-								}
-								
+								int adjacencynum = tl + 2* tm + 4*tr + 8*mr + 16*br + 32*bm + 64 * bl - 128 * ml; //bytes are signed in java, so ml bit has to be negative								
 								dos.writeShort(t.tilesetPosition);
 								dos.writeByte((byte)adjacencynum);
 							}

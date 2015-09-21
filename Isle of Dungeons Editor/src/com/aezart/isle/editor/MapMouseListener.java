@@ -32,10 +32,8 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 			
 			if (Math.max(Math.abs(xdist), Math.abs(ydist)) <= 1){
 				if (shiftdragging){
-					System.out.println("shift start drag");
 					placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), true);
 				}else{
-					System.out.println("not shift dragging");
 					placeTile(tileFromMouse(e.getX(), properties.tile_side * zoom), tileFromMouse(e.getY(), properties.tile_side * zoom), false);
 				}
 			}else{
@@ -48,10 +46,8 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 					x += uxdist;
 					y += uydist;
 					if(shiftdragging){
-						System.out.println("shift continue drag");
 						placeTile((int)x, (int)y, true);
 					}else{
-						System.out.println("not shift dragging");
 						placeTile((int)x, (int)y, false);
 					}
 					
@@ -75,18 +71,15 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 		Tile t = gui.selectedTile;
 		if (maintainAdjacency){
 			properties.mapTiles[dyt][dxt] = new Tile(t, true);
-			System.out.println("not updating adjacency");
 		}else{
 			properties.mapTiles[dyt][dxt] = new Tile(t, false);
 		}
-		System.out.println(properties.mapTiles[dyt][dxt].autotilingType);
 
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
 		for (int i = dxt - 1; i <= dxt +1; ++i){
 			for (int k = dyt -1; k <= dyt + 1; ++k){
 				if (k < properties.mapTiles.length && k >= 0 && i >= 0 && i < properties.mapTiles[k].length){
 					if (!maintainAdjacency){
-						System.out.println("updating adjacency");
 						properties.updateAdjacency(i, k);
 					}
 					int dxpx = i * properties.tile_side;
