@@ -5,8 +5,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
-import javax.swing.SwingUtilities;
-
 public class MapMouseListener implements MouseListener, MouseMotionListener{
 	
 	MainWindow gui;
@@ -20,7 +18,6 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	}
 	@Override
 	public void mouseDragged(MouseEvent e) {
-		long startTime = System.nanoTime();
 		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
 		if (lastMouseX != Integer.MIN_VALUE){
 			int mtx = tileFromMouse(e.getX(), properties.tile_side * zoom);
@@ -68,11 +65,11 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	
 	public void placeTile(int dxt, int dyt, boolean maintainAdjacency){
 		
-		Tile t = gui.selectedTile;
+		TileRef t = gui.selectedTile;
 		if (maintainAdjacency){
-			properties.mapTiles[dyt][dxt] = new Tile(t, true);
+			properties.mapTiles[dyt][dxt] = new TileRef(t.tileID, t.adjacency);
 		}else{
-			properties.mapTiles[dyt][dxt] = new Tile(t, false);
+			properties.mapTiles[dyt][dxt] = new TileRef(t.tileID);
 		}
 
 		Graphics2D g = (Graphics2D)gui.mapPreviewImage.getGraphics();
@@ -118,7 +115,6 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 	public void mousePressed(MouseEvent e) {
 		shiftdragging = ((e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0);
 		int zoom = (Integer)gui.zoomLevel.getSelectedItem();
-		
 	
 		if (e.getButton() == MouseEvent.BUTTON1){
 			if (shiftdragging){
@@ -131,12 +127,11 @@ public class MapMouseListener implements MouseListener, MouseMotionListener{
 			gui.frame.repaint();
 		}
 		if (e.getButton() == MouseEvent.BUTTON3){
-			Tile t;
-			if (shiftdragging){
-				System.out.println("shift down");
-				t = new Tile(properties.mapTiles[tileFromMouse(e.getY(), properties.tile_side * zoom)][tileFromMouse(e.getX(), properties.tile_side * zoom)], true);
+			TileRef t;
+			if (shiftdragging){				
+				t = new TileRef(properties.mapTiles[tileFromMouse(e.getY(), properties.tile_side * zoom)][tileFromMouse(e.getX(), properties.tile_side * zoom)].tileID, properties.mapTiles[tileFromMouse(e.getY(), properties.tile_side * zoom)][tileFromMouse(e.getX(), properties.tile_side * zoom)].adjacency);
 			}else{
-				t = new Tile(properties.mapTiles[tileFromMouse(e.getY(), properties.tile_side * zoom)][tileFromMouse(e.getX(), properties.tile_side * zoom)], false);
+				t = new TileRef(properties.mapTiles[tileFromMouse(e.getY(), properties.tile_side * zoom)][tileFromMouse(e.getX(), properties.tile_side * zoom)].tileID);
 			}
 			
 			gui.updateSelectedTile(t);

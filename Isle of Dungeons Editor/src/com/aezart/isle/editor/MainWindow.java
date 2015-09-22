@@ -63,7 +63,7 @@ public class MainWindow {
 	
 	JComboBox<Integer> zoomLevel;
 	JFileChooser fileChooser = new JFileChooser();
-	Tile selectedTile = null;
+	TileRef selectedTile = null;
 	int paletteXTile = 0;
 	int paletteYTile = 0;
 	int zoom = 1;
@@ -81,6 +81,7 @@ public class MainWindow {
 		zoomLevel.addItem(1);
 		zoomLevel.addItem(2);
 		zoomLevel.addItem(4);
+		zoomLevel.setSelectedIndex(0);
 		zoomLevel.setPrototypeDisplayValue(4);
 		zoomLevel.addActionListener((ActionEvent arg0)->{
 			reZoom();
@@ -196,12 +197,12 @@ public class MainWindow {
 	
 	public void updateMapDimensions(){
 		tilesetImage = tileset.processImage(properties.tileset, properties.tile_side, frame);
-		selectedTile = tileset.getTile(0, 0);
+		selectedTile = new TileRef(tileset.getTile(0, 0));
 		palettePanel.setPreferredSize(new Dimension(tilesetImage.getWidth(), tilesetImage.getHeight()));
-		properties.mapTiles = new Tile[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
+		properties.mapTiles = new TileRef[properties.yscreens * properties.screen_ytiles][properties.xscreens * properties.screen_xtiles];
 		for (int i = 0; i < properties.mapTiles.length; ++i){
 			for (int k = 0; k < properties.mapTiles[i].length; ++k){
-				properties.mapTiles[i][k] = new Tile(tileset.getTile(0, 0), true);
+				properties.mapTiles[i][k] = new TileRef(tileset.getTile(0, 0));
 			}
 		}
 		paletteWindow.repaint();
@@ -222,7 +223,7 @@ public class MainWindow {
 		paletteXTile = mousex/properties.tile_side;
 		paletteYTile = mousey/properties.tile_side;
 		if (tileset.getTile(paletteXTile, paletteYTile) != null){
-			selectedTile = tileset.getTile(paletteXTile, paletteYTile);
+			selectedTile = new TileRef(tileset.getTile(paletteXTile, paletteYTile));
 		}else{
 			paletteXTile = oldx;
 			paletteYTile = oldy;
@@ -230,7 +231,7 @@ public class MainWindow {
 		paletteWindow.repaint();
 	}
 	
-	public void updateSelectedTile(Tile t){
+	public void updateSelectedTile(TileRef t){
 		paletteXTile = -1;
 		paletteYTile = -1;
 		
@@ -278,8 +279,8 @@ public class MainWindow {
 				//System.out.println("drawing at tile:" + x + " " + y + " with palette ID: " + properties.tileIDs[y][x]);
 				int dx1 = x * properties.tile_side;
 				int dy1 = y * properties.tile_side;
-				int sx1 = (properties.mapTiles[y][x].paletteX) * properties.tile_side;
-				int sy1 = (properties.mapTiles[y][x].paletteY) * properties.tile_side;
+				int sx1 = (properties.mapTiles[y][x].tileID.paletteX) * properties.tile_side;
+				int sy1 = (properties.mapTiles[y][x].tileID.paletteY) * properties.tile_side;
 				
 				//g.drawImage(tilesetP, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);
 				//properties.updateAdjacency(x, y);
@@ -370,15 +371,7 @@ public class MainWindow {
 						try{
 						short tilesetPos = dis.readShort();
 						byte adjacencies = dis.readByte();
-						Tile t = new Tile(tileset.tiles.get(tilesetPos), false);
-						t.tl = (adjacencies >> 0 & 1) == 1;
-						t.tm = (adjacencies >> 1 & 1) == 1;
-						t.tr = (adjacencies >> 2 & 1) == 1;
-						t.mr = (adjacencies >> 3 & 1) == 1;
-						t.br = (adjacencies >> 4 & 1) == 1;
-						t.bm = (adjacencies >> 5 & 1) == 1;
-						t.bl = (adjacencies >> 6 & 1) == 1;
-						t.ml = (adjacencies >> 7 & 1) == 1;
+						TileRef t = new TileRef(tileset.tiles.get(tilesetPos),adjacencies);
 						//TODO: Adjacencies!
 						
 						properties.mapTiles[count/properties.mapTiles[0].length][count%properties.mapTiles[0].length] = t;
@@ -454,20 +447,9 @@ public class MainWindow {
 						dos.writeShort(properties.yscreens);
 						for (short k = 0; k < properties.mapTiles.length; ++k){
 							for (short i = 0; i < properties.mapTiles[k].length; ++i){
-								Tile t = properties.mapTiles[k][i];
-								
-								byte tl = (byte) (t.tl?1:0);
-								byte tm = (byte) (t.tm?1:0);
-								byte tr = (byte) (t.tr?1:0);
-								byte mr = (byte) (t.mr?1:0);
-								byte br = (byte) (t.br?1:0);
-								byte bm = (byte) (t.bm?1:0);
-								byte bl = (byte) (t.bl?1:0);
-								byte ml = (byte) (t.ml?1:0);
-								
-								int adjacencynum = tl + 2* tm + 4*tr + 8*mr + 16*br + 32*bm + 64 * bl - 128 * ml; //bytes are signed in java, so ml bit has to be negative								
-								dos.writeShort(t.tilesetPosition);
-								dos.writeByte((byte)adjacencynum);
+								TileRef t = properties.mapTiles[k][i];
+								dos.writeShort(t.tileID.tilesetPosition);
+								dos.writeByte(t.adjacency);
 							}
 						}
 					} catch (IOException e) {

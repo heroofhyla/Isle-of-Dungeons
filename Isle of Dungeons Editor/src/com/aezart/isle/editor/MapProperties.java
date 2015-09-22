@@ -4,12 +4,12 @@ public class MapProperties {
 	String name = "New Map";
 	String tileset = "res/exterior05.png";
 	public int tile_side = 16;
-	public int screen_xtiles = 20;
-	public int screen_ytiles = 15;
-	public int xscreens = 5;
-	public int yscreens = 5;
+	public int screen_xtiles = 12;
+	public int screen_ytiles = 8;
+	public int xscreens = 2;
+	public int yscreens = 2;
 	
-	Tile[][] mapTiles = new Tile[screen_ytiles * yscreens][screen_xtiles * xscreens];
+	TileRef[][] mapTiles = new TileRef[screen_ytiles * yscreens][screen_xtiles * xscreens];
 	
 	public void updateAdjacency(int xt, int yt){
 		if (yt < 0 || yt >= mapTiles.length){
@@ -21,51 +21,56 @@ public class MapProperties {
 			return;
 		}
 		
-		Tile t = mapTiles[yt][xt];
+		TileRef t = mapTiles[yt][xt];
 		if (xt == 0){
-			t.tl = true;
-			t.ml = true;
-			t.bl = true;
+			t.setAdjacent(TileRef.TOP_LEFT, true);
+			t.setAdjacent(TileRef.MID_LEFT, true);
+			t.setAdjacent(TileRef.BOT_LEFT, true);
 		}else{
-			t.ml = (mapTiles[yt][xt-1].autotilingType == t.autotilingType);
+			t.setAdjacent(TileRef.MID_LEFT,  (mapTiles[yt][xt-1].tileID.autotilingType == t.tileID.autotilingType));
 		}
+		
 		if (xt == mapTiles[yt].length - 1){
-			System.out.println("right edge");
-			t.tr = true;
-			t.mr = true;
-			t.br = true;
+			t.setAdjacent(TileRef.TOP_RIGHT, true);
+			t.setAdjacent(TileRef.MID_RIGHT, true);
+			t.setAdjacent(TileRef.BOT_RIGHT, true);
 		}else{
-			t.mr = (mapTiles[yt][xt+1].autotilingType == t.autotilingType);
+			t.setAdjacent(TileRef.MID_RIGHT,  (mapTiles[yt][xt+1].tileID.autotilingType == t.tileID.autotilingType));
+			
+			
 		}
+		
 		if (yt == 0){
-			t.tl = true;
-			t.tm = true;
-			t.tr = true;
+			t.setAdjacent(TileRef.TOP_LEFT, true);
+			t.setAdjacent(TileRef.TOP_MID, true);
+			t.setAdjacent(TileRef.TOP_RIGHT, true);
 		}else{
-			t.tm = (mapTiles[yt-1][xt].autotilingType == t.autotilingType);
+			t.setAdjacent(TileRef.TOP_MID,  (mapTiles[yt-1][xt].tileID.autotilingType == t.tileID.autotilingType));
 		}
+		
 		if (yt == mapTiles.length - 1){
-			t.bl = true;
-			t.bm = true;
-			t.br = true;
+			t.setAdjacent(TileRef.BOT_LEFT, true);
+			t.setAdjacent(TileRef.BOT_MID, true);
+			t.setAdjacent(TileRef.BOT_RIGHT, true);
 		}else{
-			t.bm = (mapTiles[yt+1][xt].autotilingType == t.autotilingType);
+			t.setAdjacent(TileRef.BOT_MID,  (mapTiles[yt+1][xt].tileID.autotilingType == t.tileID.autotilingType));
 		}
 		
 		if (xt > 0 && yt > 0){
-			t.tl = mapTiles[yt-1][xt-1].autotilingType == t.autotilingType;
+			t.setAdjacent(TileRef.TOP_LEFT,  (mapTiles[yt-1][xt-1].tileID.autotilingType == t.tileID.autotilingType));
 		}
 		
 		if (xt > 0 && yt < mapTiles.length - 1){
-			t.bl = mapTiles[yt+1][xt-1].autotilingType == t.autotilingType;
+			t.setAdjacent(TileRef.BOT_LEFT,  (mapTiles[yt+1][xt-1].tileID.autotilingType == t.tileID.autotilingType));
 		}
 		
 		if (xt < mapTiles[yt].length -1 && yt > 0){
-			t.tr = mapTiles[yt-1][xt+1].autotilingType == t.autotilingType;
+			t.setAdjacent(TileRef.TOP_RIGHT,  (mapTiles[yt-1][xt+1].tileID.autotilingType == t.tileID.autotilingType));
 		}
 		
 		if (xt < mapTiles[yt].length-1 && yt < mapTiles.length-1){
-			t.br = mapTiles[yt+1][xt+1].autotilingType == t.autotilingType;
+			t.setAdjacent(TileRef.BOT_RIGHT,  (mapTiles[yt+1][xt+1].tileID.autotilingType == t.tileID.autotilingType));
 		}
+		
 	}
 }
