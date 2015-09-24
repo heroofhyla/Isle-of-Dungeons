@@ -1,6 +1,5 @@
 package com.aezart.isle.editor;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Transparency;

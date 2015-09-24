@@ -14,7 +14,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -22,13 +21,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -41,6 +36,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 public class MainWindow {
@@ -60,7 +56,7 @@ public class MainWindow {
 	Tileset tileset;
 	JScrollPane scrollPane;
 	BufferedImage tilesetImage;
-	
+	JToggleButton toggleGridButton = new JToggleButton(new ToggleGridAction());
 	JComboBox<Integer> zoomLevel;
 	JFileChooser fileChooser = new JFileChooser();
 	TileRef selectedTile = null;
@@ -106,11 +102,13 @@ public class MainWindow {
 
 				g2D.drawImage(mapPreviewImage, x1, y1, x2, y2, x1/zoom, y1/zoom, x2/zoom, y2/zoom, null);
 				
-				g2D.setColor(Color.black);
-				for (int x = 0; x < Math.min(mapPreview.getWidth(),mapPreviewImage.getWidth()*zoom); x += zoom * properties.tile_side){
-					for (int y = 0; y < Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom); y += zoom*properties.tile_side){
-						g.drawLine(x, 0, x, Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom));
-						g.drawLine(0, y, Math.min(mapPreview.getWidth(), mapPreviewImage.getWidth() * zoom), y);
+				if (toggleGridButton.isSelected()){
+					g2D.setColor(Color.black);
+					for (int x = 0; x < Math.min(mapPreview.getWidth(),mapPreviewImage.getWidth()*zoom); x += zoom * properties.tile_side){
+						for (int y = 0; y < Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom); y += zoom*properties.tile_side){
+							g.drawLine(x, 0, x, Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom -1));
+							g.drawLine(0, y, Math.min(mapPreview.getWidth(), mapPreviewImage.getWidth() * zoom)-1, y);
+						}
 					}
 				}
 			}
@@ -124,6 +122,7 @@ public class MainWindow {
 		scrollPane.setPreferredSize(new Dimension(640,480));
 		toolbar.add(zoomLabel);
 		toolbar.add(zoomLevel);
+		toolbar.add(toggleGridButton);
 		toolbar.add(new JButton(new SaveAction()));
 		toolbar.add(new JButton(new LoadAction()));
 		toolbar.add(new JButton(new SettingsAction()));
@@ -279,9 +278,6 @@ public class MainWindow {
 				//System.out.println("drawing at tile:" + x + " " + y + " with palette ID: " + properties.tileIDs[y][x]);
 				int dx1 = x * properties.tile_side;
 				int dy1 = y * properties.tile_side;
-				int sx1 = (properties.mapTiles[y][x].tileID.paletteX) * properties.tile_side;
-				int sy1 = (properties.mapTiles[y][x].tileID.paletteY) * properties.tile_side;
-				
 				//g.drawImage(tilesetP, dx1, dy1, dx1 + properties.tile_side, dy1 + properties.tile_side, sx1, sy1, sx1 + properties.tile_side, sy1 + properties.tile_side, null);
 				//properties.updateAdjacency(x, y);
 				tileset.drawTile(dx1, dy1, properties.mapTiles[y][x], g);
@@ -357,7 +353,7 @@ public class MainWindow {
 						return;
 					}
 					
-					byte versionNo = dis.readByte();
+					dis.readByte();
 					
 					properties.screen_xtiles = dis.readShort();
 					properties.screen_ytiles = dis.readShort();
@@ -464,4 +460,15 @@ public class MainWindow {
 		
 	}
 	
+	class ToggleGridAction extends AbstractAction{
+
+		public ToggleGridAction(){
+			super("Grid");
+		}
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			frame.repaint();
+		}
+		
+	}
 }

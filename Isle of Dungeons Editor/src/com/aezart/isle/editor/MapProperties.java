@@ -2,7 +2,7 @@ package com.aezart.isle.editor;
 
 public class MapProperties {
 	String name = "New Map";
-	String tileset = "res/exterior05.png";
+	String tileset = "res/dungeon01.png";
 	public int tile_side = 16;
 	public int screen_xtiles = 12;
 	public int screen_ytiles = 8;
