@@ -47,6 +47,7 @@ public class Tileset {
 			int xTiles = (int)Math.ceil(palette.getWidth()/(double)tileSize);
 			int yTiles = (int)Math.ceil(palette.getHeight()/(double)tileSize);
 			short nextId = 0;
+			Tile autotileRef = null;
 			for (short k = 0; k < yTiles; ++k){
 				for (short i = 0; i < xTiles; ++i){
 					//if a tile is in the second column of the file, it is supplementary tiles for the autotile, so we don't need it
@@ -59,10 +60,14 @@ public class Tileset {
 						
 						//if a tile is in the first column of the file, it is an autotile
 						if (i == 0){
-							t.autotile = true;
+							t.isAutotile = true;
+							t.autotileRef = t;
 							++nextId;
 							t.autotilingType = nextId;
+							autotileRef = t;
 
+						}else{
+							t.autotileRef = autotileRef;
 						}
 						tiles.add(t);
 					}
@@ -83,10 +88,12 @@ public class Tileset {
 					if (tiles.size() > nextTile){
 						int sx = tiles.get(nextTile).paletteX * tileSize;
 						int sy = tiles.get(nextTile).paletteY * tileSize;
-						
+						int bgsx = tiles.get(nextTile).autotileRef.paletteX * tileSize;
+						int bgsy = tiles.get(nextTile).autotileRef.paletteY * tileSize;
 						int dx = i * tileSize;
 						int dy = k * tileSize;
 						
+						g.drawImage(palette, dx, dy, dx+tileSize, dy+tileSize, bgsx, bgsy, bgsx+tileSize, bgsy+tileSize,null);
 						g.drawImage(palette, dx, dy, dx+tileSize, dy+tileSize, sx, sy, sx+tileSize, sy+tileSize,null);
 						++nextTile;
 					}
@@ -114,72 +121,71 @@ public class Tileset {
 	}
 	
 	public void drawTile(int xpx, int ypx, TileRef t, Graphics g){
-		if (t.tileID.autotile){
-			int qtile = properties.tile_side/2;
-			
-			for (int i = 0; i < 4; ++i){
-				int corner = 2*i;
-				boolean same = (byte)((t.adjacency >> corner) & 1) == 1;
-				boolean horiz;
-				boolean vert;
-				if (i%2 == 0){
-					horiz = (byte)((t.adjacency >> (corner-1)) & 1) == 1;
-					vert = (byte)((t.adjacency >> (corner+1)) & 1) == 1;
-				}else{
-					horiz = (byte)((t.adjacency >> (corner+1)) & 1) == 1;
-					vert = (byte)((t.adjacency >> (corner-1)) & 1) == 1;
-				}
-				int xoff = 0;
-				int yoff = 0;
-
-				if (horiz){
-					if (same){
-						if (vert){
-							xoff = FULL_X_OFFSETS[i];
-							yoff = FULL_Y_OFFSETS[i];
-						}else { //!vert
-							xoff = HORIZ_X_OFFSETS[i];
-							yoff = HORIZ_Y_OFFSETS[i];
-
-						}
-					}else { //!same
-						if (vert){
-							xoff = OUTER_X_OFFSETS[i];
-							yoff = OUTER_Y_OFFSETS[i];
-						}else { //!vert
-							xoff = HORIZ_X_OFFSETS[i];
-							yoff = HORIZ_Y_OFFSETS[i];
-						}
-					}
-				}else{ //!horiz
-					if (same){
-						if (vert){
-								xoff = VERT_X_OFFSETS[i];
-								yoff = VERT_Y_OFFSETS[i];
-						}else { //!right
-							xoff = INNER_X_OFFSETS[i];
-							yoff = INNER_Y_OFFSETS[i];
-						}
-					}else { //!same
-						if (vert){
-								xoff = VERT_X_OFFSETS[i];
-								yoff = VERT_Y_OFFSETS[i];
-						}else { //!vert
-							xoff = INNER_X_OFFSETS[i];
-							yoff = INNER_Y_OFFSETS[i];
-						}
-					}
-				}
-				
-				int sx = t.tileID.paletteX * properties.tile_side + xoff * qtile;
-				int sy = t.tileID.paletteY * properties.tile_side + yoff * qtile;
-				int dx = xpx + DRAW_X_OFFSETS[i]*qtile;
-				int dy = ypx + DRAW_Y_OFFSETS[i]*qtile;
-				g.drawImage(palette, dx, dy, dx+qtile, dy+qtile, sx, sy, sx + qtile, sy+qtile, null);
-
+		int qtile = properties.tile_side/2;
+		
+		for (int i = 0; i < 4; ++i){
+			int corner = 2*i;
+			boolean same = (byte)((t.adjacency >> corner) & 1) == 1;
+			boolean horiz;
+			boolean vert;
+			if (i%2 == 0){
+				horiz = (byte)((t.adjacency >> (corner-1)) & 1) == 1;
+				vert = (byte)((t.adjacency >> (corner+1)) & 1) == 1;
+			}else{
+				horiz = (byte)((t.adjacency >> (corner+1)) & 1) == 1;
+				vert = (byte)((t.adjacency >> (corner-1)) & 1) == 1;
 			}
+			int xoff = 0;
+			int yoff = 0;
 
-		}else{
+			if (horiz){
+				if (same){
+					if (vert){
+						xoff = FULL_X_OFFSETS[i];
+						yoff = FULL_Y_OFFSETS[i];
+					}else { //!vert
+						xoff = HORIZ_X_OFFSETS[i];
+						yoff = HORIZ_Y_OFFSETS[i];
+
+					}
+				}else { //!same
+					if (vert){
+						xoff = OUTER_X_OFFSETS[i];
+						yoff = OUTER_Y_OFFSETS[i];
+					}else { //!vert
+						xoff = HORIZ_X_OFFSETS[i];
+						yoff = HORIZ_Y_OFFSETS[i];
+					}
+				}
+			}else{ //!horiz
+				if (same){
+					if (vert){
+							xoff = VERT_X_OFFSETS[i];
+							yoff = VERT_Y_OFFSETS[i];
+					}else { //!right
+						xoff = INNER_X_OFFSETS[i];
+						yoff = INNER_Y_OFFSETS[i];
+					}
+				}else { //!same
+					if (vert){
+							xoff = VERT_X_OFFSETS[i];
+							yoff = VERT_Y_OFFSETS[i];
+					}else { //!vert
+						xoff = INNER_X_OFFSETS[i];
+						yoff = INNER_Y_OFFSETS[i];
+					}
+				}
+			}
+			
+			int sx = t.tileID.autotileRef.paletteX * properties.tile_side + xoff * qtile;
+			int sy = t.tileID.autotileRef.paletteY * properties.tile_side + yoff * qtile;
+			int dx = xpx + DRAW_X_OFFSETS[i]*qtile;
+			int dy = ypx + DRAW_Y_OFFSETS[i]*qtile;
+			g.drawImage(palette, dx, dy, dx+qtile, dy+qtile, sx, sy, sx + qtile, sy+qtile, null);
+
+		}
+
+		if (!t.tileID.isAutotile){
 			g.drawImage(palette, xpx, ypx, xpx + properties.tile_side,ypx + properties.tile_side, 
 				t.tileID.paletteX * properties.tile_side, t.tileID.paletteY * properties.tile_side, 
 				(t.tileID.paletteX+1) * properties.tile_side, (t.tileID.paletteY+1) * properties.tile_side, null);

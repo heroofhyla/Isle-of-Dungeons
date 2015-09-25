@@ -2,12 +2,12 @@ package com.aezart.isle.editor;
 
 public class MapProperties {
 	String name = "New Map";
-	String tileset = "res/dungeon01.png";
+	String tileset = "res/exterior06.png";
 	public int tile_side = 16;
 	public int screen_xtiles = 12;
 	public int screen_ytiles = 8;
-	public int xscreens = 2;
-	public int yscreens = 2;
+	public int xscreens = 1;
+	public int yscreens = 1;
 	
 	TileRef[][] mapTiles = new TileRef[screen_ytiles * yscreens][screen_xtiles * xscreens];
 	

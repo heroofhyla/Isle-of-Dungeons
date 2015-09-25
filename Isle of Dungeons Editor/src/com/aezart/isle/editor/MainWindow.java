@@ -110,6 +110,14 @@ public class MainWindow {
 							g.drawLine(0, y, Math.min(mapPreview.getWidth(), mapPreviewImage.getWidth() * zoom)-1, y);
 						}
 					}
+					
+					g2D.setColor(Color.red);
+					for (int x = 0; x < Math.min(mapPreview.getWidth(),mapPreviewImage.getWidth()*zoom); x += zoom * properties.tile_side*properties.screen_xtiles){
+						for (int y = 0; y < Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom); y += zoom*properties.tile_side*properties.screen_ytiles){
+							g.drawLine(x, 0, x, Math.min(mapPreview.getHeight(), mapPreviewImage.getHeight() * zoom -1));
+							g.drawLine(0, y, Math.min(mapPreview.getWidth(), mapPreviewImage.getWidth() * zoom)-1, y);
+						}
+					}
 				}
 			}
 		};
